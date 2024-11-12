@@ -90,6 +90,8 @@ class PorterStemmer
      * 
      * For more information, see algorithm's specification.
      * 
+     * @param suffix_length: The length of suffix that will be removed to obtain stem.
+     * 
      * @return the value of m
      * */
     int getm(int suffix_length)
@@ -152,6 +154,8 @@ class PorterStemmer
     /**
      * @brief Checks whether data contains a vowel.
      * 
+     * @param suffix_length: The length of suffix that will be removed to obtain stem.
+     * 
      * @returns true if data contains vowel and vice versa.
      */
     bool containsVowel(int suffix_length)
@@ -196,6 +200,8 @@ class PorterStemmer
      * 
      * boys -> false
      * 
+     * @param suffix_length: The length of suffix that will be removed to obtain stem.
+     *
      * @returns boolean
      */
     bool doubleConsonantSuffix(int suffix_length)
@@ -226,6 +232,8 @@ class PorterStemmer
      * 
      * c and v are consonant and vowel respectively and second c in cvc
      * is not W, X, or Y.
+     * 
+     * @param suffix_length: The length of suffix that will be removed to obtain stem.
      * 
      * @returns boolean
      */
