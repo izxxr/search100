@@ -18,7 +18,7 @@
  * This implementation is based on the details of this algorithm documented here:
  * https://people.scs.carleton.ca/~armyunis/projects/KAPI/porter.pdf
  * 
- * Copyright (C) Izhar Ahmad & Mustafa Hussain, 2024-2025
+ * Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025
  */
 
 #include <string>

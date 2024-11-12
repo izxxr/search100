@@ -6,6 +6,6 @@
  * This application was developed as the project for CS 100 course in
  * Fall 2024 semester.
  * 
- * Copyright (C) Izhar Ahmad & Mustafa Hussain, 2024-2025
+ * Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025
  * 
  * */

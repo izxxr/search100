@@ -1,4 +1,4 @@
-/* Copyright (C) Izhar Ahmad & Mustafa Hussain, 2024-2025 */
+/* Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025 */
 
 
 #ifndef _S100_UTILS
