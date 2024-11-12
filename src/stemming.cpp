@@ -23,8 +23,97 @@
 
 #include <string>
 #include <iostream>
+#include <stdexcept>
+#include <array>
 #include <utils.cpp>
+#include <unordered_map>
 
+const std::string STEP_2_SUFFIXES[][2] = {
+    {"ational", "ate"},
+    {"tional", "tion"},
+    {"enci", "ence"},
+    {"anci", "ance"},
+    {"izer", "ize"},
+    {"abli", "able"},
+    {"alli", "al"},
+    {"entli", "ent"},
+    {"eli", "e"},
+    {"ousli", "ous"},
+    {"ization", "ize"},
+    {"ation", "ate"},
+    {"ator", "ate"},
+    {"alism", "al"},
+    {"iveness", "ive"},
+    {"fulness", "ful"},
+    {"ousness", "ous"},
+    {"aliti", "al"},
+    {"iviti", "ive"},
+    {"biliti", "ble"},
+};
+
+const std::string STEP_3_SUFFIXES[][2] = {
+    {"icate", "ic"},
+    {"ative", ""},
+    {"alize", "al"},
+    {"iciti", "ic"},
+    {"ical", "ic"},
+    {"ful", ""},
+    {"ness", ""},
+};
+
+const std::string STEP_4_SUFFIXES[][2] = {
+    {"al", ""},
+    {"ance", ""},
+    {"ence", ""},
+    {"er", ""},
+    {"ic", ""},
+    {"able", ""},
+    {"ible", ""},
+    {"ant", ""},
+    {"ement", ""},
+    {"ment", ""},
+    {"ent", ""},
+    {"ou", ""},
+    {"ism", ""},
+    {"ate", ""},
+    {"iti", ""},
+    {"ous", ""},
+    {"ive", ""},
+    {"ize", ""},
+};
+
+const std::unordered_map<char, std::array<int, 2>> STEP_2_PENULT_MAP = {
+    {'a', {0, 2}},
+    {'c', {2, 4}},
+    {'e', {4, 5}},
+    {'l', {5, 10}},
+    {'o', {10, 13}},
+    {'s', {13, 17}},
+    {'t', {17, 20}},
+    {'u', {20, 21}},
+};
+
+const std::unordered_map<char, std::array<int, 2>> STEP_3_ULT_MAP = {
+    {'e', {0, 3}},
+    {'i', {3, 4}},
+    {'l', {4, 6}},
+    {'s', {6, 7}},
+};
+
+const std::unordered_map<char, std::array<int, 2>> STEP_4_PENULT_MAP = {
+    {'a', {0, 1}},
+    {'c', {1, 3}},
+    {'e', {3, 4}},
+    {'i', {4, 5}},
+    {'l', {5, 7}},
+    {'n', {7, 11}},
+    {'o', {11, 12}},
+    {'s', {12, 13}},
+    {'t', {13, 15}},
+    {'u', {15, 16}},
+    {'v', {16, 17}},
+    {'z', {17, 18}},
+};
 
 class PorterStemmer
 {
@@ -36,6 +125,9 @@ class PorterStemmer
         step1a();
         step1b();
         step1c();
+        step2();
+        step3();
+        step4();
 
         return data;
     }
@@ -318,5 +410,88 @@ class PorterStemmer
     {
         if (containsVowel(1))
             data.replace(data.length() - 1, 1, "i");
+    }
+
+    void processSuffixArray(const std::string arr[][2], int start, int end, int m)
+    {
+        for (int i = start; i < end; i++)
+        {
+            std::string s1 = arr[i][0];
+            std::string s2 = arr[i][1];
+
+            if (stringEndsWith(data, s1))
+            {
+                int s1_len = s1.length();
+                if (getm(s1_len) > m)
+                {
+                    data.replace(data.length() - s1_len, s1_len, s2);
+                    break;
+                }
+            }
+        }
+    }
+
+    void getSuffixBounds(std::unordered_map<char, std::array<int, 2>> hash_map, char c, int &start, int &end)
+    {
+        if (!hash_map.count(c))
+            return;
+
+        auto bounds = hash_map.at(c);
+        start = bounds[0];
+        end = bounds[1];
+    }
+
+    void step2()
+    {
+        int start, end;
+        int len = data.length();
+
+        if (len < 2)
+            return;
+
+        getSuffixBounds(STEP_2_PENULT_MAP, data.at(len - 2), start, end);
+        processSuffixArray(STEP_2_SUFFIXES, start, end, 0);
+    }
+
+    void step3()
+    {
+        int start, end;
+        int len = data.length();
+
+        if (len < 1)
+            return;
+
+        getSuffixBounds(STEP_3_ULT_MAP, data.at(len - 1), start, end);
+        processSuffixArray(STEP_3_SUFFIXES, start, end, 0);
+    }
+
+    void step4()
+    {
+        int start, end;
+        int len = data.length();
+
+        if (len < 2)
+            return;
+        
+        // The -ION suffix requires special treatment because
+        // it has *S and *T forms in condition as well that
+        // processPrefixArray does not handle.
+        if (stringEndsWith(data, "ion"))
+        {
+            std::string old_data = data;
+            data = data.replace(len - 3,  3, "");
+            if (stringEndsWith(data, "s") || stringEndsWith(data, "t"))
+            {
+                if (!(getm(0) > 1))
+                    data = old_data;
+            }
+            else
+                data = old_data;
+
+            return;
+        }
+
+        getSuffixBounds(STEP_4_PENULT_MAP, data.at(len - 2), start, end);
+        processSuffixArray(STEP_4_SUFFIXES, start, end, 1);
     }
 };

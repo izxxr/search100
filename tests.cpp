@@ -193,6 +193,86 @@ class TestablePorterStemmer: public PorterStemmer {
         IS_EQ(step1cWithData("happy"), "happi");
         IS_EQ(step1cWithData("sky"), "sky");
     }
+
+    std::string step2WithData(std::string input)
+    {
+        setData(input);
+        step2();
+        return data;
+    }
+
+    void testStep2()
+    {
+        IS_EQ(step2WithData("relational"), "relate");
+        IS_EQ(step2WithData("conditional"), "condition");
+        IS_EQ(step2WithData("rational"), "rational");
+        IS_EQ(step2WithData("valenci"), "valence");
+        IS_EQ(step2WithData("hesitanci"), "hesitance");
+        IS_EQ(step2WithData("digitizer"), "digitize");
+        IS_EQ(step2WithData("conformabli"), "conformable");
+        IS_EQ(step2WithData("radicalli"), "radical");
+        IS_EQ(step2WithData("differentli"), "different");
+        IS_EQ(step2WithData("vileli"), "vile");
+        IS_EQ(step2WithData("analogousli"), "analogous");
+        IS_EQ(step2WithData("vietnamization"), "vietnamize");
+        IS_EQ(step2WithData("predication"), "predicate");
+        IS_EQ(step2WithData("operator"), "operate");
+        IS_EQ(step2WithData("feudalism"), "feudal");
+        IS_EQ(step2WithData("decisiveness"), "decisive");
+        IS_EQ(step2WithData("hopefulness"), "hopeful");
+        IS_EQ(step2WithData("callousness"), "callous");
+        IS_EQ(step2WithData("formaliti"), "formal");
+        IS_EQ(step2WithData("sensitiviti"), "sensitive");
+        IS_EQ(step2WithData("sensibiliti"), "sensible");
+    }
+
+    std::string step3WithData(std::string input)
+    {
+        setData(input);
+        step3();
+        return data;
+    }
+
+    void testStep3()
+    {
+        IS_EQ(step3WithData("triplicate"), "triplic");
+        IS_EQ(step3WithData("formative"), "form");
+        IS_EQ(step3WithData("formalize"), "formal");
+        IS_EQ(step3WithData("electriciti"), "electric");
+        IS_EQ(step3WithData("electrical"), "electric");
+        IS_EQ(step3WithData("hopeful"), "hope");
+        IS_EQ(step3WithData("goodness"), "good");
+    }
+
+    std::string step4WithData(std::string input)
+    {
+        setData(input);
+        step4();
+        return data;
+    }
+
+    void testStep4()
+    {
+        IS_EQ(step4WithData("revival"), "reviv");
+        IS_EQ(step4WithData("allowance"), "allow");
+        IS_EQ(step4WithData("inference"), "infer");
+        IS_EQ(step4WithData("airliner"), "airlin");
+        IS_EQ(step4WithData("gyroscopic"), "gyroscop");
+        IS_EQ(step4WithData("adjustable"), "adjust");
+        IS_EQ(step4WithData("defensible"), "defens");
+        IS_EQ(step4WithData("irritant"), "irrit");
+        IS_EQ(step4WithData("replacement"), "replac");
+        IS_EQ(step4WithData("adjustment"), "adjust");
+        IS_EQ(step4WithData("dependent"), "depend");
+        IS_EQ(step4WithData("adoption"), "adopt");
+        IS_EQ(step4WithData("homologou"), "homolog");
+        IS_EQ(step4WithData("communism"), "commun");
+        IS_EQ(step4WithData("activate"), "activ");
+        IS_EQ(step4WithData("angulariti"), "angular");
+        IS_EQ(step4WithData("homologous"), "homolog");
+        IS_EQ(step4WithData("effective"), "effect");
+        IS_EQ(step4WithData("bowdlerize"), "bowdler");
+    }
 };
 
 void testPorterStemmer()
@@ -205,6 +285,9 @@ void testPorterStemmer()
     stemmer.testDoubleConsonantSuffix();
     stemmer.testEndsCVC();
     stemmer.testStep1();
+    stemmer.testStep2();
+    stemmer.testStep3();
+    stemmer.testStep4();
 }
 
 // Runner
