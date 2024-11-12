@@ -233,17 +233,17 @@ class PorterStemmer
             if (getm() > 0)
                 data.replace(data_length - 3, 3, "ee");
         }
-        else if (stringEndsWith(data, "ed"))
-        {
-            followup = true;
-            if (containsVowel())
-                data.replace(data_length - 2, 2, "");
-        }
         else if (stringEndsWith(data, "ing"))
         {
             followup = true;
             if (containsVowel())
                 data.replace(data_length - 3, 3, "");
+        }
+        else if (stringEndsWith(data, "ed"))
+        {
+            followup = true;
+            if (containsVowel())
+                data.replace(data_length - 2, 2, "");
         }
 
         data_length = data.length();
