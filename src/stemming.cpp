@@ -92,12 +92,14 @@ class PorterStemmer
      * 
      * @return the value of m
      * */
-    int getm()
+    int getm(int suffix_length)
     {
         int i;
         int start = -1;
         int m = 0;
-        int len = data.length();
+        int len = data.length() - suffix_length;
+        std::string old_data = data;
+        data.replace(len, suffix_length, "");
 
         for (i = 0; i < len; i++)
         {
@@ -109,7 +111,10 @@ class PorterStemmer
         }
 
         if (start == -1)
-            return m;
+        {
+            data = old_data;
+            return 0;
+        }
 
         int end = -1;
 
@@ -123,7 +128,10 @@ class PorterStemmer
         }
 
         if ((end < start) || (end == -1))
+        {
+            data = old_data;
             return 0;
+        }
 
         bool v = true;
         for (i = start; i <= end; i++)
@@ -137,6 +145,7 @@ class PorterStemmer
                 v = true;
         }
 
+        data = old_data;
         return m;
     }
 
@@ -145,27 +154,37 @@ class PorterStemmer
      * 
      * @returns true if data contains vowel and vice versa.
      */
-    bool containsVowel()
+    bool containsVowel(int suffix_length)
     {
+        std::string old_data = data;
+        data.replace(data.length() - suffix_length, suffix_length, "");
+
+        bool res;
         if (data.find('a') != std::string::npos)
-            return true;
-        if (data.find('e') != std::string::npos)
-            return true;
-        if (data.find('i') != std::string::npos)
-            return true;
-        if (data.find('o') != std::string::npos)
-            return true;
-        if (data.find('u') != std::string::npos)
-            return true;
-        
+            res = true;
+        else if (data.find('e') != std::string::npos)
+            res = true;
+        else if (data.find('i') != std::string::npos)
+            res = true;
+        else if (data.find('o') != std::string::npos)
+            res = true;
+        else if (data.find('u') != std::string::npos)
+            res = true;
+
+        if (res)
+        {
+            data = old_data;
+            return res;
+        }
+
         int y_index = data.find('y');
         if ((y_index == std::string::npos) || (y_index == 0))
-            return false;
+            res = false;
+        else
+            res = isConsonant(y_index - 1);
 
-        if (isConsonant(y_index - 1))
-            return true;
-
-        return false;
+        data = old_data;
+        return res;
     }
 
     /**
@@ -179,19 +198,27 @@ class PorterStemmer
      * 
      * @returns boolean
      */
-    bool doubleConsonantSuffix()
+    bool doubleConsonantSuffix(int suffix_length)
     {
-        int len = data.length();
+        int len = data.length() - suffix_length;
+
         if (len < 2)
             return false;
+
+        std::string old_data = data;
+        data.replace(len - suffix_length, suffix_length, "");
 
         int last = len - 1;
         int second_last = len - 2;
 
+        bool res;
         if (isConsonant(last))
-            return data.at(second_last) == data.at(last);
+            res = data.at(second_last) == data.at(last);
+        else
+            res = false;
 
-        return false;
+        data = old_data;
+        return res;
     }
 
     /**
@@ -202,9 +229,12 @@ class PorterStemmer
      * 
      * @returns boolean
      */
-    bool endsCVC()
+    bool endsCVC(int suffix_length)
     {
-        int len = data.length();
+        int len = data.length() - suffix_length;
+        std::string old_data = data;
+        data.replace(len - suffix_length, suffix_length, "");
+
         if (len < 3)
             return false;
 
@@ -213,10 +243,14 @@ class PorterStemmer
         int c2_index = len - 1;
         char c2 = data.at(c2_index);
 
+        bool res;
         if (isConsonant(c1_index) && !isConsonant(v_index) && isConsonant(c2_index))
-            return ((c2 != 'w') && (c2 != 'x') && (c2 != 'y'));
-        
-        return false;
+            res = ((c2 != 'w') && (c2 != 'x') && (c2 != 'y'));
+        else
+            res = false;
+
+        data = old_data;
+        return res;
     }
 
     void step1a()
@@ -235,56 +269,46 @@ class PorterStemmer
         bool followup = false;
         if (stringEndsWith(data, "eed"))
         {
-            std::string old_data = data;
-            data.replace(data.length() - 3, 3, "ee");
-            if (!(getm() > 0))
-                data = old_data;
+            if ((getm(3) > 0))
+                data.replace(data.length() - 3, 3, "ee");
         }
         else if (stringEndsWith(data, "ing"))
         {
-            std::string old_data = data;
-            data.replace(data.length() - 3, 3, "");
-            if (!containsVowel())
-                data = old_data;
-            else
+            if (containsVowel(3))
+            {
+                data.replace(data.length() - 3, 3, "");
                 followup = true;
+            }
         }
         else if (stringEndsWith(data, "ed"))
         {
-            std::string old_data = data;
-            data.replace(data.length() - 2, 2, "");
-            if (!containsVowel())
-                data = old_data;
-            else
+            if (containsVowel(2))
+            {
                 followup = true;
+                data.replace(data.length() - 2, 2, "");;
+            }
         }
 
         if (followup)
         {
             if (stringEndsWith(data, "at") || stringEndsWith(data, "bl") || stringEndsWith(data, "iz"))
                 data.push_back('e');
-            else if (doubleConsonantSuffix())
+            else if (doubleConsonantSuffix(0))
             {
                 if (!(stringEndsWith(data, "l") || stringEndsWith(data, "s") || stringEndsWith(data, "z")))
                     data.pop_back();
             }
-            else if (endsCVC())
+            else if (endsCVC(0))
             {
-                data.push_back('e');
-                if (getm() != 1)
-                    data.pop_back();
+                if (getm(0) == 1)
+                    data.push_back('e');
             }
         }
     }
 
     void step1c()
     {
-        std::string old_data = data;
-        data.replace(data.length() - 1, 1, "");
-
-        if (containsVowel())
-            data.push_back('i');
-        else
-            data = old_data;
+        if (containsVowel(1))
+            data.replace(data.length() - 1, 1, "i");
     }
 };

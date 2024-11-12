@@ -69,7 +69,7 @@ class TestablePorterStemmer: public PorterStemmer {
     int getMFromData(std::string input)
     {
         setData(input);
-        return getm();
+        return getm(0);
     }
 
     void testGetM()
@@ -95,7 +95,7 @@ class TestablePorterStemmer: public PorterStemmer {
     bool containsVowelWithData(std::string input)
     {
         setData(input);
-        return containsVowel();
+        return containsVowel(0);
     }
 
     void testContainsVowel()
@@ -111,7 +111,7 @@ class TestablePorterStemmer: public PorterStemmer {
     bool doubleConsonantSuffixWithData(std::string input)
     {
         setData(input);
-        return doubleConsonantSuffix();
+        return doubleConsonantSuffix(0);
     }
 
     void testDoubleConsonantSuffix()
@@ -124,7 +124,7 @@ class TestablePorterStemmer: public PorterStemmer {
     bool endsCVCWithData(std::string input)
     {
         setData(input);
-        return endsCVC();
+        return endsCVC(0);
     }
 
     void testEndsCVC()
