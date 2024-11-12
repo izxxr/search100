@@ -7,6 +7,11 @@
  * 
  * https://stackoverflow.com/a/52314467
  * 
+ * To run the tests, "src" directory has to be included using -I flag with g++:
+ * 
+ * $ g++ -I src tests.cpp
+ * $ ./a.exe
+ * 
  * Copyright (C) Izhar Ahmad & Mustafa Hussain, 2024-2025
  *
  * */ 
