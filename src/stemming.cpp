@@ -21,12 +21,13 @@
  * Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025
  */
 
-#include <string>
-#include <iostream>
-#include <stdexcept>
 #include <array>
-#include <utils.cpp>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 #include <unordered_map>
+#include <utils.cpp>
 
 const std::string STEP_2_SUFFIXES[][2] = {
     {"ational", "ate"},
@@ -118,16 +119,34 @@ const std::unordered_map<char, std::array<int, 2>> STEP_4_PENULT_MAP = {
 class PorterStemmer
 {
     public:
-    
+
+    std::string stemSentence(std::string text)
+    {
+        std::istringstream iss(text);
+        std::string word;
+        std::string result = "";
+
+        while (std::getline(iss, word, ' '))
+        {
+            result += stem(word) + " ";
+        }
+
+        // L - 1 to strip the leading space
+        return result.substr(0, result.length() - 1);
+    }
+
     std::string stem(std::string text)
     {
         data = stringToLower(text);
+
         step1a();
         step1b();
         step1c();
         step2();
         step3();
         step4();
+        step5a();
+        step5b();
 
         return data;
     }
@@ -304,7 +323,7 @@ class PorterStemmer
             return false;
 
         std::string old_data = data;
-        data.replace(len - suffix_length, suffix_length, "");
+        data.replace(len, suffix_length, "");
 
         int last = len - 1;
         int second_last = len - 2;
@@ -333,7 +352,7 @@ class PorterStemmer
     {
         int len = data.length() - suffix_length;
         std::string old_data = data;
-        data.replace(len - suffix_length, suffix_length, "");
+        data.replace(len, suffix_length, "");
 
         if (len < 3)
             return false;
@@ -408,8 +427,11 @@ class PorterStemmer
 
     void step1c()
     {
-        if (containsVowel(1))
-            data.replace(data.length() - 1, 1, "i");
+        if (stringEndsWith(data, "y"))
+        {
+            if (containsVowel(1))
+                data.replace(data.length() - 1, 1, "i");
+        }
     }
 
     void processSuffixArray(const std::string arr[][2], int start, int end, int m)
@@ -431,8 +453,11 @@ class PorterStemmer
         }
     }
 
-    void getSuffixBounds(std::unordered_map<char, std::array<int, 2>> hash_map, char c, int &start, int &end)
+    void getSuffixBounds(const std::unordered_map<char, std::array<int, 2>> hash_map, char c, int &start, int &end)
     {
+        start = 0;
+        end = 0;
+
         if (!hash_map.count(c))
             return;
 
@@ -493,5 +518,22 @@ class PorterStemmer
 
         getSuffixBounds(STEP_4_PENULT_MAP, data.at(len - 2), start, end);
         processSuffixArray(STEP_4_SUFFIXES, start, end, 1);
+    }
+
+    void step5a()
+    {
+        if (stringEndsWith(data, "e"))
+        {
+            int m = getm(1);
+            if ((m > 1) || ((m == 1) && !endsCVC(1)))
+                data.replace(data.length() - 1, 1, "");
+        }
+    }
+
+    void step5b()
+    {
+        int m = getm(0);
+        if ((m > 1) && doubleConsonantSuffix(0) && stringEndsWith(data, "l"))
+            data.replace(data.length() - 1, 1, "");
     }
 };

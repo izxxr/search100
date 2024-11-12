@@ -17,6 +17,7 @@
  * */ 
 
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <utils.cpp>
 #include <stemming.cpp>
@@ -273,6 +274,35 @@ class TestablePorterStemmer: public PorterStemmer {
         IS_EQ(step4WithData("effective"), "effect");
         IS_EQ(step4WithData("bowdlerize"), "bowdler");
     }
+
+    std::string step5aWithData(std::string input)
+    {
+        setData(input);
+        step5a();
+        return data;
+    }
+
+    std::string step5bWithData(std::string input)
+    {
+        setData(input);
+        step5b();
+        return data;
+    }
+
+    void testStep5()
+    {
+        IS_EQ(step5aWithData("probate"), "probat");
+        IS_EQ(step5aWithData("rate"), "rate");
+        IS_EQ(step5aWithData("cease"), "ceas");
+
+        IS_EQ(step5bWithData("controll"), "control");
+        IS_EQ(step5bWithData("roll"), "roll");
+    }
+
+    void testStemSentence()
+    {
+        IS_EQ(stemSentence("Stones and sticks may break my bones but words can never hurt me"), "stone and stick mai break my bone but word can never hurt me")
+    }
 };
 
 void testPorterStemmer()
@@ -288,12 +318,14 @@ void testPorterStemmer()
     stemmer.testStep2();
     stemmer.testStep3();
     stemmer.testStep4();
+    stemmer.testStep5();
+    stemmer.testStemSentence();
 }
 
 // Runner
 int main()
 {
-    testStringEndsWith();
     testStringToLower();
+    testStringEndsWith();
     testPorterStemmer();
 }
