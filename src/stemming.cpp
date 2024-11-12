@@ -1,27 +1,29 @@
-/* Implementation of the Porter Stemmer algorithm.
-
-Porter Stemmer is a stemming algorithm that removes suffixes from words
-to extract the stem of the given word. In a more simpler terms, this algorithm
-extracts the base word from different forms of word.
-
-For example, the algorithm can extract the base word (CONNECT) from the
-following words:
-
-CONNECT
-CONNECTS
-CONNECTION
-CONNECTIONS
-CONNECTING
-CONNECTED
-
-This implementation is based on the details of this algorithm documented here:
-https://people.scs.carleton.ca/~armyunis/projects/KAPI/porter.pdf
-
-Copyright (C) Izhar Ahmad & Mustafa Hussain, 2024-2025 */
+/**
+ * Implementation of the Porter Stemmer algorithm. 
+ * 
+ * Porter Stemmer is a stemming algorithm that removes suffixes from words
+ * to extract the stem of the given word. In a more simpler terms, this algorithm
+ * extracts the base word from different forms of word.
+ * 
+ * For example, the algorithm can extract the base word (CONNECT) from the
+ * following words: 
+ * 
+ * CONNECT
+ * CONNECTS
+ * CONNECTION
+ * CONNECTIONS
+ * CONNECTING
+ * CONNECTED
+ * 
+ * This implementation is based on the details of this algorithm documented here:
+ * https://people.scs.carleton.ca/~armyunis/projects/KAPI/porter.pdf
+ * 
+ * Copyright (C) Izhar Ahmad & Mustafa Hussain, 2024-2025
+ */
 
 #include <string>
 #include <iostream>
-#include "utils.cpp"
+#include <utils.cpp>
 
 
 class PorterStemmer
@@ -38,9 +40,8 @@ class PorterStemmer
         return data;
     }
 
-    // private:
+    protected:
 
-    int data_length;
     std::string data;
 
     /**
@@ -59,10 +60,10 @@ class PorterStemmer
     bool isConsonant(int index)
     {
         char c = data.at(index);
-        if ((c == 'A') || (c == 'E') || (c == 'I') || (c == 'O') || (c == 'U'))
+        if ((c == 'a') || (c == 'e') || (c == 'i') || (c == 'o') || (c == 'u'))
             return false;
 
-        if (c == 'Y')
+        if (c == 'y')
         {
             if (index == 0)
                 return true;
@@ -96,8 +97,9 @@ class PorterStemmer
         int i;
         int start = -1;
         int m = 0;
+        int len = data.length();
 
-        for (i = 0; i < data_length; i++)
+        for (i = 0; i < len; i++)
         {
             if (!isConsonant(i))
             {
@@ -111,7 +113,7 @@ class PorterStemmer
 
         int end = -1;
 
-        for (i = data_length - 1; i > start; i--)
+        for (i = len - 1; i > start; i--)
         {
             if (isConsonant(i))
             {
@@ -170,18 +172,21 @@ class PorterStemmer
      * @brief Checks if the string ends with a double (same) consonant.
      * 
      * fuzz -> true
+     * 
      * buzz -> true
+     * 
      * boys -> false
      * 
      * @returns boolean
      */
     bool doubleConsonantSuffix()
     {
-        if (data_length < 2)
+        int len = data.length();
+        if (len < 2)
             return false;
 
-        int last = data_length - 1;
-        int second_last = data_length - 2;
+        int last = len - 1;
+        int second_last = len - 2;
 
         if (isConsonant(last))
             return data.at(second_last) == data.at(last);
@@ -199,15 +204,16 @@ class PorterStemmer
      */
     bool endsCVC()
     {
-        if (data_length < 3)
+        int len = data.length();
+        if (len < 3)
             return false;
 
-        int c1_index = data_length - 3;
-        int v_index = data_length - 2;
-        int c2_index = data_length - 1;
+        int c1_index = len - 3;
+        int v_index = len - 2;
+        int c2_index = len - 1;
         char c2 = data.at(c2_index);
 
-        if (isConsonant(c1_index) && !isConsonant(v_index) && isConsonant(c2))
+        if (isConsonant(c1_index) && !isConsonant(v_index) && isConsonant(c2_index))
             return ((c2 != 'w') && (c2 != 'x') && (c2 != 'y'));
         
         return false;
@@ -215,14 +221,13 @@ class PorterStemmer
 
     void step1a()
     {
+        int len = data.length();
         if (stringEndsWith(data, "sses"))
-            data.replace(data_length - 4, 4, "ss");
+            data.replace(data.length() - 4, 4, "ss");
         else if (stringEndsWith(data, "ies"))
-            data.replace(data_length - 3, 3, "i");
-        else if (stringEndsWith(data, "s"))
+            data.replace(data.length() - 3, 3, "i");
+        else if (stringEndsWith(data, "s") && !stringEndsWith(data, "ss"))
             data.pop_back();
-
-        data_length = data.length();
     }
 
     void step1b()
@@ -230,23 +235,29 @@ class PorterStemmer
         bool followup = false;
         if (stringEndsWith(data, "eed"))
         {
-            if (getm() > 0)
-                data.replace(data_length - 3, 3, "ee");
+            std::string old_data = data;
+            data.replace(data.length() - 3, 3, "ee");
+            if (!(getm() > 0))
+                data = old_data;
         }
         else if (stringEndsWith(data, "ing"))
         {
-            followup = true;
-            if (containsVowel())
-                data.replace(data_length - 3, 3, "");
+            std::string old_data = data;
+            data.replace(data.length() - 3, 3, "");
+            if (!containsVowel())
+                data = old_data;
+            else
+                followup = true;
         }
         else if (stringEndsWith(data, "ed"))
         {
-            followup = true;
-            if (containsVowel())
-                data.replace(data_length - 2, 2, "");
+            std::string old_data = data;
+            data.replace(data.length() - 2, 2, "");
+            if (!containsVowel())
+                data = old_data;
+            else
+                followup = true;
         }
-
-        data_length = data.length();
 
         if (followup)
         {
@@ -259,17 +270,21 @@ class PorterStemmer
             }
             else if (endsCVC())
             {
-                if (getm() == 1)
-                    data.push_back('e');
+                data.push_back('e');
+                if (getm() != 1)
+                    data.pop_back();
             }
         }
-
-        data_length = data.length();
     }
 
     void step1c()
     {
-        if (containsVowel() && stringEndsWith(data, "Y"))
-            data.replace(data_length - 1, 1, "I");
+        std::string old_data = data;
+        data.replace(data.length() - 1, 1, "");
+
+        if (containsVowel())
+            data.push_back('i');
+        else
+            data = old_data;
     }
 };

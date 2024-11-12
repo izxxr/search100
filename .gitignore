@@ -31,8 +31,8 @@
 *.out
 *.app
 
-# Test files
-test.cpp
+# Debug files
+base.cpp
 
 # VSCode files
 .vscode/*

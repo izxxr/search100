@@ -1,5 +1,9 @@
 /* Copyright (C) Izhar Ahmad & Mustafa Hussain, 2024-2025 */
 
+
+#ifndef _S100_UTILS
+#define _S100_UTILS
+
 #include <algorithm>
 #include <cctype>
 #include <string>
@@ -14,7 +18,11 @@
  */
 bool stringEndsWith(std::string data, std::string substr)
 {
-    return (data.substr(data.length() - substr.length()) == substr);
+    int diff = data.length() - substr.length();
+    if (diff < 0)
+        return false;
+
+    return (data.substr(diff) == substr);
 }
 
 /**
@@ -29,3 +37,5 @@ std::string stringToLower(std::string data)
     std::transform(data.begin(), data.end(), data.begin(), [](unsigned char c){ return std::tolower(c); });
     return data;
 }
+
+#endif
