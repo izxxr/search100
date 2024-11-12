@@ -83,6 +83,14 @@ const std::string STEP_4_SUFFIXES[][2] = {
     {"ize", ""},
 };
 
+
+// These hash maps are used as a small performance booster when looking up S1
+// suffix in the 2D arrays above. These arrays are sorted in order of
+// penultimate (second to last) characters so these hash maps maps a character
+// to index range (2-element array) in which suffixes for that character are stored.
+// For step 2 and 4, map is for penultimate character i.e. second last characters
+// For step 3, map is for ultimate character i.e. last characters
+// This is due to how suffixes are sorted in the arrays above for each step.
 const std::unordered_map<char, std::array<int, 2>> STEP_2_PENULT_MAP = {
     {'a', {0, 2}},
     {'c', {2, 4}},
