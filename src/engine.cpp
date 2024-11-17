@@ -10,7 +10,7 @@
 #include <stemming.cpp>
 
 #ifndef _SEARCH100_ENGINE
-#define _SEARCH100
+#define _SEARCH100_ENGINE
 
 
 /**
@@ -129,6 +129,13 @@ class SearchEngine
 
     public:
 
+    SearchEngine(std::string corpus_directory_path_str)
+    {
+        corpus_directory_path = std::filesystem::path(corpus_directory_path_str);
+        if (corpus_directory_path.has_filename())
+            throw "corpus_directory_path_str must be a directory, not a file.";
+    }
+
     /**
      * @brief Index the documents in corpus directory.
      * 
@@ -138,15 +145,24 @@ class SearchEngine
      * 
      * @param useData: if true (default), the local indexes data is used
      * to load indexes in memory if available.
+     * 
      */
     void indexCorpusDirectory(bool useData = true)
     {
+        log("Finding local documents index...");
+
         if (checkFileExists("term_occurences.json") && checkFileExists("term_documents.json")
             && checkFileExists("documents.json") && useData)
         {
+            log("Loading local indexes...");
             loadFromFiles();
+
+            log("Successfully loaded indexes for " + std::to_string(getIndexSize()) + " documents.");
             return;
         }
+
+        log("No local indexes found.");
+        log("Indexing corpus directory...");
 
         nlohmann::json documents_json;
         nlohmann::json term_occurences_json;
@@ -154,22 +170,37 @@ class SearchEngine
 
         for (auto &file : std::filesystem::recursive_directory_iterator(corpus_directory_path))
         {
-            if (file.path().extension().string() != ".txt")
+            std::filesystem::path fp = file.path();
+            if (fp.extension().string() != ".txt")
                 continue;
 
             indexDocument(file, documents_json, term_occurences_json, term_documents_json);
+            log(fp.string() + " - DONE", "", false, 1);
         }
 
+        if (!getIndexSize())
+        {
+            log(
+                "No searchable text documents. Place text files to be searched in "
+                + corpus_directory_path.string() + " directory and restart Search100!",
+                "WARNING"
+            );
+            return;
+        }
+
+        log("Writing index data to disk...");
         writeJSON("documents.json", documents_json);
         writeJSON("term_occurences.json", term_occurences_json);
         writeJSON("term_documents.json", term_documents_json);
+        log("Successfully indexed " + std::to_string(getIndexSize()) + " documents...");
     }
 
-    SearchEngine(std::string corpus_directory_path_str)
+    /**
+     * @brief The number of documents stored in loaded indexes.
+     */
+    int getIndexSize()
     {
-        corpus_directory_path = std::filesystem::path(corpus_directory_path_str);
-        if (corpus_directory_path.has_filename())
-            throw "corpus_directory_path_str must be a directory, not a file.";
+        return documents.size();
     }
 };
 

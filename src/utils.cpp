@@ -44,4 +44,25 @@ bool checkFileExists (const std::string &name) {
   return (stat(name.c_str(), &buffer) == 0); 
 }
 
+void log(
+    std::string msg,
+    std::string scope = "INFO",
+    bool add_prefix = true,
+    int indent = 0
+)
+{
+    std::string prefix = "";
+    if (indent)
+        prefix.replace(0, indent - 1, "\t");
+    if (add_prefix)
+        prefix += "[Search100] ";
+
+    if (!scope.length())
+        std::cout << prefix;
+    else
+        std::cout << prefix << "[" << scope << "] ";
+
+    std::cout << msg << std::endl;
+}
+
 #endif
