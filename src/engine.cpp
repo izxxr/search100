@@ -44,7 +44,32 @@ class SearchEngine
     /* Used to track largest document IDs */
     int doc_id_tracker = -1;
 
-    void loadFromFiles() {}
+    void loadFromFiles() {
+        nlohmann::json documents_json = readJSON("documents.json");
+        nlohmann::json term_occurences_json = readJSON("term_occurences.json");
+        nlohmann::json term_documents_json = readJSON("term_documents.json");
+
+        for (nlohmann::json::iterator iter = documents_json.begin(); iter != documents_json.end(); ++iter) {
+            int document_id = iter.value();
+            documents[document_id] = std::filesystem::path(iter.key());
+
+            for (auto &[term, occurences] : term_occurences_json[std::to_string(document_id)].items())
+            {
+                for (auto &occurence : occurences)
+                {
+                    PositionAwareStem stem;
+                    stem.document_id = document_id;
+                    stem.stemmed = term;
+                    stem.original = occurence["original"];
+                    stem.index = occurence["index"];
+                    stem.row = occurence["row"];
+                    term_occurences[document_id][term].push_back(stem);
+                }
+            }
+        }
+
+        term_documents = term_documents_json.get<std::map<std::string, std::vector<int>>>();
+    }
 
     void indexDocument(
         const std::filesystem::directory_entry &file,
@@ -94,6 +119,12 @@ class SearchEngine
         std::ofstream fs(filename);
         fs << std::setw(4) << obj << std::endl;
         fs.close();
+    }
+
+    nlohmann::json readJSON(const std::string &filename)
+    {
+        std::ifstream fs(filename);
+        return nlohmann::json::parse(fs);
     }
 
     public:

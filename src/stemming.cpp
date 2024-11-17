@@ -178,11 +178,9 @@ class PositionAwareStem
     nlohmann::json toJSON()
     {
         return nlohmann::json({
-            {"index", index},
             {"row", row},
-            {"document_id", document_id},
+            {"index", index},
             {"original", original},
-            {"stemmed", stemmed}
         });
     }
 };
