@@ -21,12 +21,18 @@
  * Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025
  */
 
+#ifndef _SEARCH100_STEMMING
+#define _SEARCH100_STEMMING
+
 #include <array>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <set>
 #include <unordered_map>
+#include <vector>
 #include <utils.cpp>
+#include <json.hpp>
 
 const std::string STEP_2_SUFFIXES[][2] = {
     {"ational", "ate"},
@@ -123,23 +129,147 @@ const std::unordered_map<char, std::array<int, 2>> STEP_4_PENULT_MAP = {
     {'z', {17, 18}},
 };
 
+// Adapted from https://gist.github.com/sebleier/554280
+const std::set<std::string> STOPWORDS = {
+    "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you",
+    "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself",
+    "she", "her", "hers", "herself", "it", "its", "itself", "they", "them",
+    "their", "theirs", "themselves", "what", "which", "who", "whom", "this",
+    "that", "these", "those", "am", "is", "are", "was", "were", "be", "been",
+    "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a",
+    "an", "the", "and", "but", "if", "or", "because", "as", "until", "while",
+    "of", "at", "by", "for", "with", "about", "against", "between", "into",
+    "through", "during", "before", "after", "above", "below", "to", "from",
+    "up", "down", "in", "out", "on", "off", "over", "under", "again", "further",
+    "then", "once", "here", "there", "when", "where", "why", "how", "all", "any",
+    "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor",
+    "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can",
+    "will", "just", "don", "should", "now",
+};
+
+const std::string PUNCTUATION = "!\"#$%&'()*+, -./:;<=>?@[\\]^_`{|}~";
+
+const int WORD_STEM_THRESHOLD = 3;
+
+/**
+ * @brief Checks whether a word is stemmable or not.
+ * 
+ * This does not account for punctuation.
+ */
+bool checkWordStemmable(std::string word)
+{
+    return !((word.length() < WORD_STEM_THRESHOLD) || (STOPWORDS.count(word) > 0));
+}
+
+/**
+ * @brief Describes a stemmed word that has information about its position
+ * within a specific line.
+ */
+class PositionAwareStem
+{
+    public:
+
+    int index;  // The position of the stemmed word in the line.
+    int row = -1;  // The line number in which word occurs.  (Default: -1)
+    int document_id = -1;  // The ID of document in which the word occurs. (Default: -1)
+    std::string original;  // The original (unstemmed) form of word.
+    std::string stemmed;  // The stemmed word.
+
+    nlohmann::json toJSON()
+    {
+        return nlohmann::json({
+            {"index", index},
+            {"row", row},
+            {"document_id", document_id},
+            {"original", original},
+            {"stemmed", stemmed}
+        });
+    }
+};
+
+
 class PorterStemmer
 {
     public:
 
-    std::string stemSentence(std::string text)
+    /**
+     * @brief Stems a sentence.
+     * 
+     * This method also performs tokenization and normalization on the
+     * sentence. This means the sentence is split into words and the
+     * stop words, punctuation, and words below a certain threshold
+     * length are removed from the final result.
+     * 
+     * @returns Vector containing position aware stemmed words.
+     * 
+     */
+    std::vector<PositionAwareStem> stemSentence(std::string text, int row = -1, int document_id = -1)
     {
+        int index = 0;
+        int trailing_spaces = text.find_first_not_of(" \n\r\t");
+
+        index += trailing_spaces;
+
+        text.erase(text.find_last_not_of(" \n\r\t") + 1);
+        text.erase(0, trailing_spaces);
+
         std::istringstream iss(text);
         std::string word;
-        std::string result = "";
+        std::vector<PositionAwareStem> stems;
 
+        // Tokenization (split sentence into words)
         while (std::getline(iss, word, ' '))
         {
-            result += stem(word) + " ";
+            int prev = 0;
+            int pos;
+
+            // If we encounter a word with punctuation, we split the word further
+            // with delimiters as punctuation marks. This means if a punctuation is
+            // at the end e.g. "dog.", it is simply removed "dog." -> "dog" but if the
+            // punctuation is in middle of word. The word is split at that point and
+            // treated as two (or more) separate words. For example, "hello#world" will
+            // be treated separately as "hello" and "world".
+            while ((pos = word.find_first_of(PUNCTUATION, prev)) != std::string::npos)
+            {
+                if (pos > prev)
+                {
+                    std::string part = word.substr(prev, pos - prev);
+                    if (checkWordStemmable(part))
+                        stems.push_back(stemWord(part, index, row, document_id));
+
+                    index += part.length();
+                }
+
+                index++;  // account for removed punctuation character
+                prev = pos + 1;
+            }
+
+            std::string part;
+            if (prev < word.length())
+            {
+                part = word.substr(prev);
+
+                if (checkWordStemmable(part))
+                    stems.push_back(stemWord(part, index, row, document_id));
+            }
+
+            index += part.length() + 1;  // +1 to account for removed space char
         }
 
-        // L - 1 to strip the leading space
-        return result.substr(0, result.length() - 1);
+        return stems;
+    }
+
+    protected:
+
+    PositionAwareStem stemWord(std::string word, int index, int row = -1, int document_id = -1)
+    {
+        PositionAwareStem obj;
+        obj.index = index;
+        obj.original = word;
+        obj.row = row;
+        obj.document_id = document_id;
+        obj.stemmed = stem(word);
+        return obj;
     }
 
     std::string stem(std::string text)
@@ -157,8 +287,6 @@ class PorterStemmer
 
         return data;
     }
-
-    protected:
 
     std::string data;
 
@@ -544,3 +672,5 @@ class PorterStemmer
             data.replace(data.length() - 1, 1, "");
     }
 };
+
+#endif
