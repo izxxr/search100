@@ -117,7 +117,7 @@ class SearchEngine
     void writeJSON(const std::string &filename, const nlohmann::json &obj)
     {
         std::ofstream fs(filename);
-        fs << std::setw(4) << obj << std::endl;
+        fs << obj << std::endl;
         fs.close();
     }
 
