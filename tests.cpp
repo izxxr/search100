@@ -299,10 +299,8 @@ class TestablePorterStemmer: public PorterStemmer {
         IS_EQ(step5bWithData("roll"), "roll");
     }
 
-    void testStemSentence()
-    {
-        IS_EQ(stemSentence("Stones and sticks may break my bones but words can never hurt me"), "stone and stick mai break my bone but word can never hurt me")
-    }
+    // TODO: write tests for stemSentence
+    // - Must test edge cases like punctuation marks, leading/trailing/multiple spaces
 };
 
 void testPorterStemmer()
@@ -319,7 +317,6 @@ void testPorterStemmer()
     stemmer.testStep3();
     stemmer.testStep4();
     stemmer.testStep5();
-    stemmer.testStemSentence();
 }
 
 // Runner

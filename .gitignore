@@ -36,3 +36,12 @@ base.cpp
 
 # VSCode files
 .vscode/*
+
+# Search100 Files
+documents.json
+term_documents.json
+term_occurences.json
+
+# Corpus Directory
+corpus/*
+!corpus/.gitkeep

@@ -4,6 +4,7 @@
 #ifndef _S100_UTILS
 #define _S100_UTILS
 
+#include <sys/stat.h>
 #include <algorithm>
 #include <cctype>
 #include <string>
@@ -36,6 +37,11 @@ std::string stringToLower(std::string data)
 {
     std::transform(data.begin(), data.end(), data.begin(), [](unsigned char c){ return std::tolower(c); });
     return data;
+}
+
+bool checkFileExists (const std::string &name) {
+  struct stat buffer;   
+  return (stat(name.c_str(), &buffer) == 0); 
 }
 
 #endif
