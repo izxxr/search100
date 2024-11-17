@@ -33,7 +33,7 @@ class SearchEngine
      * If term1 and term2 occurs in document with document_id, then the mapping
      * looks like the following:
      * 
-     * { document_id: {term1: PositionAwareStem, term2: PositionAwareStem } }
+     * { document_id: {term1: [PositionAwareStem], term2: [PositionAwareStem] } }
      * 
      * */
     std::map<int, std::map<std::string, std::vector<PositionAwareStem>>> term_occurences;
@@ -66,7 +66,8 @@ class SearchEngine
         term_occurences[document_id] = {};
 
         documents_json[path.string()] = document_id;
-        term_occurences_json[document_id_str] = std::map<std::string, nlohmann::json>();
+        term_occurences_json[document_id_str] = std::map<std::string, std::vector<nlohmann::json>>();
+        auto &doc_term_occurences = term_occurences_json[document_id_str];
 
         while (getline(fs, line))
         {
@@ -75,11 +76,13 @@ class SearchEngine
             {
                 term_occurences[document_id][stem.stemmed].push_back(stem);
                 term_documents[stem.stemmed].push_back(document_id);
-                term_occurences_json[document_id_str][stem.stemmed] = stem.toJSON();
 
                 if (!term_documents_json.count(stem.stemmed))
                     term_documents_json[stem.stemmed] = std::vector<int>{};
+                if (!doc_term_occurences.count(stem.stemmed))
+                    doc_term_occurences[stem.stemmed] = std::vector<nlohmann::json>{};
 
+                doc_term_occurences[stem.stemmed].push_back(stem.toJSON());
                 term_documents_json[stem.stemmed].push_back(document_id);
             }
             row++;
