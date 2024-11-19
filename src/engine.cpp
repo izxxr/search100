@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <set>
 #include <json.hpp>
 #include <stemming.cpp>
 
@@ -39,7 +40,7 @@ class SearchEngine
     std::map<int, std::map<std::string, std::vector<PositionAwareStem>>> term_occurences;
 
     /* Maps a term to vector of document IDs in which it occurs. */
-    std::map<std::string, std::vector<int>> term_documents;
+    std::map<std::string, std::set<int>> term_documents;
 
     /* Used to track largest document IDs */
     int doc_id_tracker = -1;
@@ -68,7 +69,7 @@ class SearchEngine
             }
         }
 
-        term_documents = term_documents_json.get<std::map<std::string, std::vector<int>>>();
+        term_documents = term_documents_json.get<std::map<std::string, std::set<int>>>();
     }
 
     void indexDocument(
@@ -100,15 +101,13 @@ class SearchEngine
             for (PositionAwareStem stem : stems)
             {
                 term_occurences[document_id][stem.stemmed].push_back(stem);
-                term_documents[stem.stemmed].push_back(document_id);
+                term_documents[stem.stemmed].insert(document_id);
 
-                if (!term_documents_json.count(stem.stemmed))
-                    term_documents_json[stem.stemmed] = std::vector<int>{};
                 if (!doc_term_occurences.count(stem.stemmed))
                     doc_term_occurences[stem.stemmed] = std::vector<nlohmann::json>{};
 
                 doc_term_occurences[stem.stemmed].push_back(stem.toJSON());
-                term_documents_json[stem.stemmed].push_back(document_id);
+                term_documents_json[stem.stemmed] = term_documents[stem.stemmed];
             }
             row++;
         }
