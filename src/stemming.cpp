@@ -193,6 +193,9 @@ class Occurence: public Stem
     static Occurence fromStem(Stem stem, int document_id = -1, int line = -1)
     {
         Occurence occ;
+        occ.index = stem.index;
+        occ.original = stem.original;
+        occ.stemmed = stem.stemmed;
         occ.document_id = document_id;
         occ.line = line;
         return occ;
