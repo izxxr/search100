@@ -299,7 +299,7 @@ class TestablePorterStemmer: public PorterStemmer {
         IS_EQ(step5bWithData("roll"), "roll");
     }
 
-    // TODO: write tests for stemSentence
+    // TODO: write tests for stemLine
     // - Must test edge cases like punctuation marks, leading/trailing/multiple spaces
 };
 

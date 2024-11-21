@@ -1,25 +1,4 @@
-/**
- * Implementation of the Porter Stemmer algorithm. 
- * 
- * Porter Stemmer is a stemming algorithm that removes suffixes from words
- * to extract the stem of the given word. In a more simpler terms, this algorithm
- * extracts the base word from different forms of word.
- * 
- * For example, the algorithm can extract the base word (CONNECT) from the
- * following words: 
- * 
- * CONNECT
- * CONNECTS
- * CONNECTION
- * CONNECTIONS
- * CONNECTING
- * CONNECTED
- * 
- * This implementation is based on the details of this algorithm documented here:
- * https://people.scs.carleton.ca/~armyunis/projects/KAPI/porter.pdf
- * 
- * Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025
- */
+/* Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025 */
 
 #ifndef _SEARCH100_STEMMING
 #define _SEARCH100_STEMMING
@@ -129,7 +108,9 @@ const std::unordered_map<char, std::array<int, 2>> STEP_4_PENULT_MAP = {
     {'z', {17, 18}},
 };
 
-// Adapted from https://gist.github.com/sebleier/554280
+/**
+ * @brief Set of stopwords that are ignored during tokenization.
+ */
 const std::set<std::string> STOPWORDS = {
     "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you",
     "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself",
@@ -147,8 +128,16 @@ const std::set<std::string> STOPWORDS = {
     "will", "just", "don", "should", "now",
 };
 
+/**
+ * @brief Punctuation marks that are used as delimiters or that are ignored.
+ */
 const std::string PUNCTUATION = "!\"#$%&'()*+, -./:;<=>?@[\\]^_`{|}~";
 
+/** @brief Minimum word length required for a word to be stemmed.
+ * 
+ * If word length is less than this length, the word is ignored
+ * during tokenization.
+*/
 const int WORD_STEM_THRESHOLD = 3;
 
 /**
@@ -162,46 +151,97 @@ bool checkWordStemmable(std::string word)
 }
 
 /**
- * @brief Describes a stemmed word that has information about its position
- * within a specific line.
+ * @brief Describes a stemmed word.
  */
-class PositionAwareStem
+class Stem
 {
     public:
 
     int index;  // The position of the stemmed word in the line.
-    int row = -1;  // The line number in which word occurs.  (Default: -1)
-    int document_id = -1;  // The ID of document in which the word occurs. (Default: -1)
     std::string original;  // The original (unstemmed) form of word.
     std::string stemmed;  // The stemmed word.
+};
+
+/**
+ * @brief Describes a stemmed word that has information about its position
+ * within a specific line and document.
+ */
+class Occurence: public Stem
+{
+    public:
+
+    int document_id = -1;  // The ID of document in which the word occurs. (Default: -1)
+    int line = -1;  // The line number in which word occurs.  (Default: -1)
 
     nlohmann::json toJSON()
     {
         return nlohmann::json({
-            {"row", row},
+            {"line", line},
             {"index", index},
             {"original", original},
         });
     }
+
+    /**
+     * @brief Creates an `Occurence` class instance from `Stem` instance.
+     * 
+     * @param document_id: The document ID for this occurence.
+     * @param line: The line number for this occurence.
+     * 
+     * @return `Occurence`
+     */
+    static Occurence fromStem(Stem stem, int document_id = -1, int line = -1)
+    {
+        Occurence occ;
+        occ.document_id = document_id;
+        occ.line = line;
+        return occ;
+    }
 };
 
 
+/**
+ * @brief Implementation of Porter Stemmer algorithm.
+ * 
+ * Porter Stemmer is a stemming algorithm that removes suffixes from words
+ * to extract the stem of the given word. In a more simpler terms, this
+ * algorithm extracts the base word from different forms of word.
+ * 
+ * For example, the algorithm can extract the base word (CONNECT) from the
+ * following words: 
+ * 
+ * CONNECT
+ * CONNECTS
+ * CONNECTION
+ * CONNECTIONS
+ * CONNECTING
+ * CONNECTED
+ * 
+ * For information about the individual steps of this algorithm, see the following
+ * document that this implementation is based on:
+ * 
+ * https://people.scs.carleton.ca/~armyunis/projects/KAPI/porter.pdf
+ * 
+ * The algorithm is wrapped in this class to easily track the string being stemmed
+ * across subsequent steps. To stem a sequence of words, use the stemLine() method.
+ * 
+ */
 class PorterStemmer
 {
     public:
 
     /**
-     * @brief Stems a sentence.
+     * @brief Stems a line.
      * 
      * This method also performs tokenization and normalization on the
-     * sentence. This means the sentence is split into words and the
+     * line. This means the line is split into words and the
      * stop words, punctuation, and words below a certain threshold
      * length are removed from the final result.
      * 
      * @returns Vector containing position aware stemmed words.
      * 
      */
-    std::vector<PositionAwareStem> stemSentence(std::string text, int row = -1, int document_id = -1)
+    std::vector<Stem> stemLine(std::string text)
     {
         int index = 0;
         int trailing_spaces = text.find_first_not_of(" \n\r\t");
@@ -213,9 +253,9 @@ class PorterStemmer
 
         std::istringstream iss(text);
         std::string word;
-        std::vector<PositionAwareStem> stems;
+        std::vector<Stem> stems;
 
-        // Tokenization (split sentence into words)
+        // Tokenization (split line into words)
         while (std::getline(iss, word, ' '))
         {
             int prev = 0;
@@ -233,7 +273,7 @@ class PorterStemmer
                 {
                     std::string part = word.substr(prev, pos - prev);
                     if (checkWordStemmable(part))
-                        stems.push_back(stemWord(part, index, row, document_id));
+                        stems.push_back(stemWord(part, index));
 
                     index += part.length();
                 }
@@ -248,7 +288,7 @@ class PorterStemmer
                 part = word.substr(prev);
 
                 if (checkWordStemmable(part))
-                    stems.push_back(stemWord(part, index, row, document_id));
+                    stems.push_back(stemWord(part, index));
             }
 
             index += part.length() + 1;  // +1 to account for removed space char
@@ -259,17 +299,28 @@ class PorterStemmer
 
     protected:
 
-    PositionAwareStem stemWord(std::string word, int index, int row = -1, int document_id = -1)
+    /**
+     * @brief Stems a word and returns respective Stem instance.
+     * 
+     * @param index: The index at which the word to be stemmed occurs in
+     * the line being stemmed.
+     * 
+     * @returns `Stem` - the stemmed word.
+     */
+    Stem stemWord(std::string word, int index)
     {
-        PositionAwareStem obj;
+        Stem obj;
         obj.index = index;
         obj.original = word;
-        obj.row = row;
-        obj.document_id = document_id;
         obj.stemmed = stem(word);
         return obj;
     }
 
+    /**
+     * @brief Stems a single word.
+     * 
+     * @returns string - the stemmed word.
+     */
     std::string stem(std::string text)
     {
         data = stringToLower(text);
@@ -567,6 +618,10 @@ class PorterStemmer
         }
     }
 
+    /**
+     * @brief Iterates through suffix 2D array in given bounds and applies
+     * replacement if suffix and m-value match the condition.
+     */
     void processSuffixArray(const std::string arr[][2], int start, int end, int m)
     {
         for (int i = start; i < end; i++)
@@ -586,6 +641,11 @@ class PorterStemmer
         }
     }
 
+
+    /**
+     * @brief Gets lower and upper bounds for given penultimate/ultimate character
+     * in suffixes 2D arrays.
+     */
     void getSuffixBounds(const std::unordered_map<char, std::array<int, 2>> hash_map, char c, int &start, int &end)
     {
         start = 0;

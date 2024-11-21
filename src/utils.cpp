@@ -4,10 +4,11 @@
 #ifndef _S100_UTILS
 #define _S100_UTILS
 
-#include <sys/stat.h>
 #include <algorithm>
 #include <cctype>
+#include <iostream>
 #include <string>
+#include <sys/stat.h>
 
 /**
  * @brief Checks whether `str` ends with `substr`
@@ -15,7 +16,7 @@
  * @param  data:  the string to check ending of.
  * @param  substr:  the ending to match with.
  * 
- * @return bool
+ * @return bool - true if ending matched.
  */
 bool stringEndsWith(std::string data, std::string substr)
 {
@@ -31,7 +32,7 @@ bool stringEndsWith(std::string data, std::string substr)
  * 
  * @param data: the string to convert.
  * 
- * @return string
+ * @return string - lowercase string.
  */
 std::string stringToLower(std::string data)
 {
@@ -39,11 +40,27 @@ std::string stringToLower(std::string data)
     return data;
 }
 
+/**
+ * @brief Checks whether a file exists.
+ * 
+ * @param name: the name of file.
+ * 
+ * @return bool - true if file exists.
+ */
 bool checkFileExists (const std::string &name) {
   struct stat buffer;   
   return (stat(name.c_str(), &buffer) == 0); 
 }
 
+/**
+ * @brief Logs a message in console.
+ * 
+ * @param msg: the message to output.
+ * @param scope: the scope of log message (default e.g. INFO)
+ * @param add_prefix: whether to add Search100 prefix (default: true)
+ * @param indent: The level of indentation to add. (default: 0, no indentation)
+ * 
+ */
 void log(
     std::string msg,
     std::string scope = "INFO",

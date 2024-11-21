@@ -37,7 +37,7 @@ class SearchEngine
      * { document_id: {term1: [PositionAwareStem], term2: [PositionAwareStem] } }
      * 
      * */
-    std::map<int, std::map<std::string, std::vector<PositionAwareStem>>> term_occurences;
+    std::map<int, std::map<std::string, std::vector<Occurence>>> term_occurences;
 
     /* Maps a term to vector of document IDs in which it occurs. */
     std::map<std::string, std::set<int>> term_documents;
@@ -45,6 +45,9 @@ class SearchEngine
     /* Used to track largest document IDs */
     int doc_id_tracker = -1;
 
+    /**
+     * @brief Loads indexes from data on disk.
+     */
     void loadFromFiles() {
         nlohmann::json documents_json = readJSON("documents.json");
         nlohmann::json term_occurences_json = readJSON("term_occurences.json");
@@ -58,13 +61,13 @@ class SearchEngine
             {
                 for (auto &occurence : occurences)
                 {
-                    PositionAwareStem stem;
-                    stem.document_id = document_id;
-                    stem.stemmed = term;
-                    stem.original = occurence["original"];
-                    stem.index = occurence["index"];
-                    stem.row = occurence["row"];
-                    term_occurences[document_id][term].push_back(stem);
+                    Occurence parsed;
+                    parsed.document_id = document_id;
+                    parsed.stemmed = term;
+                    parsed.original = occurence["original"];
+                    parsed.index = occurence["index"];
+                    parsed.line = occurence["line"];
+                    term_occurences[document_id][term].push_back(parsed);
                 }
             }
         }
@@ -72,6 +75,14 @@ class SearchEngine
         term_documents = term_documents_json.get<std::map<std::string, std::set<int>>>();
     }
 
+    /**
+     * @brief Indexes the given file.
+     * 
+     * @param file: The path object for file to index.
+     * @param documents_json: The JSON object to add document data to.
+     * @param term_occurences_json: The JSON object to add terms data to.
+     * @param term_documents_json: The JSON object to add occurence documents data to.
+     */
     void indexDocument(
         const std::filesystem::directory_entry &file,
         nlohmann::json &documents_json,
@@ -84,7 +95,7 @@ class SearchEngine
         std::string line;
         PorterStemmer stemmer;
 
-        int row = 0;
+        int lineno = 0;
         int document_id = ++doc_id_tracker;
         std::string document_id_str = std::to_string(document_id);  // for JSON
 
@@ -97,30 +108,47 @@ class SearchEngine
 
         while (getline(fs, line))
         {
-            std::vector<PositionAwareStem> stems = stemmer.stemSentence(line, row, document_id);
-            for (PositionAwareStem stem : stems)
+            std::vector<Stem> stems = stemmer.stemLine(line);
+            for (Stem stem : stems)
             {
-                term_occurences[document_id][stem.stemmed].push_back(stem);
+                Occurence occ = Occurence::fromStem(stem, document_id, lineno);
+                term_occurences[document_id][stem.stemmed].push_back(occ);
                 term_documents[stem.stemmed].insert(document_id);
 
                 if (!doc_term_occurences.count(stem.stemmed))
                     doc_term_occurences[stem.stemmed] = std::vector<nlohmann::json>{};
 
-                doc_term_occurences[stem.stemmed].push_back(stem.toJSON());
+                doc_term_occurences[stem.stemmed].push_back(occ.toJSON());
                 term_documents_json[stem.stemmed] = term_documents[stem.stemmed];
             }
-            row++;
+            lineno++;
         }
     }
 
-    void writeJSON(const std::string &filename, const nlohmann::json &obj)
+
+    /**
+     * @brief Writes the given JSON object to file at given path.
+     * 
+     * @param filename: The name of file to write into.
+     * @param obj: The JSON object to write.
+     * 
+     * @returns `nlohmann::json` - the parsed JSON.
+     */
+    void writeJSON(const std::string filename, const nlohmann::json &obj)
     {
         std::ofstream fs(filename);
         fs << obj << std::endl;
         fs.close();
     }
 
-    nlohmann::json readJSON(const std::string &filename)
+    /**
+     * @brief Reads the given JSON file.
+     * 
+     * @param filename: The name of file to read from.
+     * 
+     * @returns `nlohmann::json` - the parsed JSON.
+     */
+    nlohmann::json readJSON(const std::string filename)
     {
         std::ifstream fs(filename);
         return nlohmann::json::parse(fs);
@@ -128,6 +156,11 @@ class SearchEngine
 
     public:
 
+    /**
+     * @brief Search engine constructor
+     * 
+     * @param corpus_directory_path_str: The path of corpus directory.
+     */
     SearchEngine(std::string corpus_directory_path_str)
     {
         corpus_directory_path = std::filesystem::path(corpus_directory_path_str);
@@ -142,8 +175,9 @@ class SearchEngine
      * available. If so, the data will be loaded. In case data is not
      * available, the files are indexed and indexes are stored locally.
      * 
-     * @param useData: if true (default), the local indexes data is used
-     * to load indexes in memory if available.
+     * @param useData: If true (default), the local indexes data is used
+     * to load indexes in memory if available. If false, even if data is
+     * available, the indexes are regenerated from corpus.
      * 
      */
     void indexCorpusDirectory(bool useData = true)
@@ -196,6 +230,8 @@ class SearchEngine
 
     /**
      * @brief The number of documents stored in loaded indexes.
+     * 
+     * @returns int - the index size.
      */
     int getIndexSize()
     {
