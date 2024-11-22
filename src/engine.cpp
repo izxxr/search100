@@ -1,5 +1,8 @@
 /* Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025 */
 
+#ifndef _SEARCH100_ENGINE
+#define _SEARCH100_ENGINE
+
 #include <cmath>
 #include <string>
 #include <vector>
@@ -10,10 +13,6 @@
 #include <tuple>
 #include <json.hpp>
 #include <stemming.cpp>
-
-#ifndef _SEARCH100_ENGINE
-#define _SEARCH100_ENGINE
-
 
 /**
  * @brief Describes search result for a specific term in query.
