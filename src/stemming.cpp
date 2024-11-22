@@ -10,8 +10,8 @@
 #include <set>
 #include <unordered_map>
 #include <vector>
-#include <utils.cpp>
 #include <json.hpp>
+#include "utils.cpp"
 
 const std::string STEP_2_SUFFIXES[][2] = {
     {"ational", "ate"},

@@ -19,8 +19,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <utils.cpp>
-#include <stemming.cpp>
+#include "src/utils.cpp"
+#include "src/stemming.cpp"
 
 #define IS_EQ(x, y) { if (x != y) { std::cout << __FUNCTION__ << " failed on line " << __LINE__ << " (" << x << " != " << y << ")" << std::endl; }}
 

@@ -11,8 +11,8 @@
 #include <fstream>
 #include <set>
 #include <tuple>
-#include <json.hpp>
-#include <stemming.cpp>
+#include "json.hpp"
+#include "stemming.cpp"
 
 /**
  * @brief Describes search result for a specific term in query.

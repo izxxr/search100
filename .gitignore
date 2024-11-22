@@ -26,6 +26,9 @@
 *.a
 *.lib
 
+lib/
+include/SFML/
+
 # Executables
 *.exe
 *.out
