@@ -32,7 +32,7 @@
 *.app
 
 # Debug files
-base.cpp
+base.*
 
 # VSCode files
 .vscode/*
@@ -40,7 +40,7 @@ base.cpp
 # Search100 Files
 documents.json
 term_documents.json
-term_occurences.json
+term_occurrences.json
 
 # Corpus Directory
 corpus/*

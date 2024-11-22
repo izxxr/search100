@@ -65,7 +65,8 @@ void log(
     std::string msg,
     std::string scope = "INFO",
     bool add_prefix = true,
-    int indent = 0
+    int indent = 0,
+    bool newline = true
 )
 {
     std::string prefix = "";
@@ -79,7 +80,9 @@ void log(
     else
         std::cout << prefix << "[" << scope << "] ";
 
-    std::cout << msg << std::endl;
+    std::cout << msg;
+    if (newline)
+        std::cout << std::endl;
 }
 
 #endif

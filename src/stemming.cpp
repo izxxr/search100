@@ -157,21 +157,39 @@ class Stem
 {
     public:
 
-    int index;  // The position of the stemmed word in the line.
-    std::string original;  // The original (unstemmed) form of word.
-    std::string stemmed;  // The stemmed word.
+    /**
+     * @brief The position of the stemmed word in the line.
+     */
+    int index;
+
+    /**
+     * @brief The original (unstemmed) form of word.
+     */
+    std::string original;
+
+    /**
+     * @brief The stemmed word.
+     */
+    std::string stemmed;
 };
 
 /**
  * @brief Describes a stemmed word that has information about its position
  * within a specific line and document.
  */
-class Occurence: public Stem
+class Occurrence: public Stem
 {
     public:
 
-    int document_id = -1;  // The ID of document in which the word occurs. (Default: -1)
-    int line = -1;  // The line number in which word occurs.  (Default: -1)
+    /**
+     * @brief The ID of document that this occurrence is present in.
+     */
+    int document_id = -1;
+
+    /**
+     * @brief The line number in which word occurs.
+     */
+    int line = -1;
 
     nlohmann::json toJSON()
     {
@@ -183,16 +201,16 @@ class Occurence: public Stem
     }
 
     /**
-     * @brief Creates an `Occurence` class instance from `Stem` instance.
+     * @brief Creates an `Occurrence` class instance from `Stem` instance.
      * 
-     * @param document_id: The document ID for this occurence.
-     * @param line: The line number for this occurence.
+     * @param document_id: The document ID for this occurrence.
+     * @param line: The line number for this occurrence.
      * 
-     * @return `Occurence`
+     * @return `Occurrence`
      */
-    static Occurence fromStem(Stem stem, int document_id = -1, int line = -1)
+    static Occurrence fromStem(Stem stem, int document_id = -1, int line = -1)
     {
-        Occurence occ;
+        Occurrence occ;
         occ.index = stem.index;
         occ.original = stem.original;
         occ.stemmed = stem.stemmed;
