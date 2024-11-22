@@ -15,9 +15,9 @@ in the `PATH` variable.
 
 For proper functioning of SFML library, it is recommended to use the version of GCC linked below:
 
-**64-bit:** [**⬇️ Download MSVCRT 13.1.0 x64**](https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.7z)
+> **64-bit:** [**⬇️ Download MSVCRT 13.1.0 x64**](https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.7z)
 
-**32-bit:** [**⬇️ Download MSVCRT 13.1.0 x86**](https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-i686-posix-dwarf-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.7z)
+> **32-bit:** [**⬇️ Download MSVCRT 13.1.0 x86**](https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-i686-posix-dwarf-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.7z)
 
 Extract the downloaded ZIP file and add the path of extracted `mingw64/bin/` directory to `PATH`
 environment variable.
