@@ -64,7 +64,7 @@ class SearchEngine
      * If term1 and term2 occurs in document with document_id, then the mapping
      * looks like the following:
      * 
-     * { document_id: {term1: [PositionAwareStem], term2: [PositionAwareStem] } }
+     * { document_id: {term1: [Occurrence, ...], term2: [Occurrence, ...] } }
      * 
      * */
     std::map<int, std::map<std::string, std::vector<Occurrence>>> term_occurrences;
