@@ -36,7 +36,7 @@ int main()
         {
             auto path = engine.getDocumentPath(result.document_id);
             
-            log("In document " + path.string(), "", false);
+            log("In document " + path.string() + " (" + to_string(result.relevance_score) + ")", "", false);
             
             for (auto &occurence : result.occurrences)
             {

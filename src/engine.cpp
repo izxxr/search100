@@ -229,16 +229,14 @@ class SearchEngine
      */
     double computeIDF(std::string term)
     {
-        double total_docs = (double)term_documents.size();
-        double df;
+        double total_docs = (double)documents.size();
+        double df = (double)term_documents[term].size();
 
-        if (!term_documents.count(term))
-            df = 0.0;
-        else
-            df = (double)term_documents[term].size();
-
-        // The increment is done to prevent zero division.
-        return std::log((total_docs) / (df + 1));
+        // This function has an initial requirement that there must
+        // be at least one document in which the term appears otherwise
+        // zero-division error is encountered. getRelevanceScore() method
+        // only calls this function if there are documents in which term exist.
+        return std::log(total_docs / df);
     }
 
     /**
