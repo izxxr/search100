@@ -41,7 +41,7 @@ if precompiled files do not work for any reason.
 
 Download the SFML library for your respective operating system from the following link:
 
-> **32-bit:** [**⬇️ Download SFML 2.6.2 - GCC MinGW (SEH) 13.1.0**](https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip)
+> **64-bit:** [**⬇️ Download SFML 2.6.2 - GCC MinGW (SEH) 13.1.0**](https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip)
 
 > **32-bit:** [**⬇️ Download SFML 2.6.2 - GCC MinGW (DW2) 13.1.0**](https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-32-bit.zip)
 
