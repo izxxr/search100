@@ -28,9 +28,9 @@ environment variable.
 
 Use the following link to download the files for your respective operating system:
 
-**64-bit:** [**⬇️ Download search100_w64**](https://github.com/izxxr/search100/releases/download/1.0.0/search100_w64.zip)
+> **64-bit:** [**⬇️ Download search100_w64.zip**](https://github.com/izxxr/search100/releases/download/1.0.0/search100_w64.zip)
 
-**32-bit:** [**⬇️ Download search100_w32**](https://github.com/izxxr/search100/releases/download/1.0.0/search100_w32.zip)
+> **32-bit:** [**⬇️ Download search100_w32.zip**](https://github.com/izxxr/search100/releases/download/1.0.0/search100_w32.zip)
 
 Extract the downloaded ZIP file and run `search100.exe` file to start using Search100.
 
@@ -41,9 +41,9 @@ if precompiled files do not work for any reason.
 
 Download the SFML library for your respective operating system from the following link:
 
-**32-bit:** [**⬇️ Download SFML 2.6.2 - GCC MinGW (SEH) 13.1.0**](https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip)
+> **32-bit:** [**⬇️ Download SFML 2.6.2 - GCC MinGW (SEH) 13.1.0**](https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip)
 
-**32-bit:** [**⬇️ Download SFML 2.6.2 - GCC MinGW (DW2) 13.1.0**](https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-32-bit.zip)
+> **32-bit:** [**⬇️ Download SFML 2.6.2 - GCC MinGW (DW2) 13.1.0**](https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-32-bit.zip)
 
 Clone this repository either by downloading the files directly from GitHub or using Git:
 
