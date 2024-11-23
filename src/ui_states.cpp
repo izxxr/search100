@@ -59,11 +59,11 @@ class StateHome: public State
     void draw(sf::RenderWindow &window, State &state, AppData &data)
     {
         auto title = sf::Text("Search100", data.fonts["Poppins"]);
-        auto subtitle = sf::Text("Simple, yet fast.", data.fonts["Poppins"]);
+        auto subtitle = sf::Text("Simple yet fast search engine", data.fonts["Poppins"]);
         auto win_size = window.getSize();
 
         title.setCharacterSize(100);
-        subtitle.setCharacterSize(30);
+        subtitle.setCharacterSize(25);
 
         centerText(win_size, title, true, false, 0u, 50u);
         centerText(win_size, subtitle, true, false, 0u, 200u);
