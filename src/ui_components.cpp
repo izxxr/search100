@@ -63,4 +63,121 @@ class StatusBar: public Component
     }
 };
 
+
+/**
+ * @brief The search bar component that accepts input for search query.
+ */
+class SearchBar: public Component
+{
+    public:
+
+    bool search_button_hovered = false;
+
+    sf::RectangleShape search_button;
+
+    /**
+     * @brief The current value of search bar.
+     */
+    std::string value = "";
+
+    /**
+     * @brief Describes the position of the cursor.
+     */
+    int cursor_pos = 0;
+
+    /**
+     * @brief Moves the cursor one character to the left of text.
+     */
+    void moveCursorLeft()
+    {
+        if (cursor_pos == 0)
+            return;
+
+        cursor_pos--;
+    }
+
+    /**
+     * @brief Moves the cursor one character to the left of text.
+     */
+    void moveCursorRight()
+    {
+        if (cursor_pos == value.length())
+            return;
+
+        cursor_pos++;
+    }
+
+    /**
+     * @brief Inserts a character to searchbar text.
+     * 
+     * The value is inserted at current cursor position. If
+     * unicode value 8 is entered, it is equivalent to backspace
+     * hence a character is removed instead.
+     * 
+     * If unicode value is 22 (CTRL + V), the content of clipboard
+     * is added to value.
+     * 
+     * @param unicode: The unicode value for character to append.
+     */
+    void addChar(int unicode)
+    {
+        if (unicode == 8)
+        {
+            if (!value.empty() && cursor_pos != 0)
+                value.erase(--cursor_pos, 1);
+        }
+        else if (unicode == 22)
+        {
+            std::string cb_val = sf::Clipboard::getString();
+            value = value.substr(0, cursor_pos) + cb_val + value.substr(cursor_pos);
+            cursor_pos += cb_val.length();
+        }
+        else if (unicode < 128)
+            value.insert(cursor_pos++, 1, static_cast<char>(unicode));
+
+        std::cout << unicode << std::endl;
+    }
+
+    void draw(sf::RenderWindow &window, AppData &data)
+    {
+        auto win_size = window.getSize();
+        sf::RectangleShape rect(sf::Vector2f(600, 50));
+
+        rect.setFillColor(sf::Color(237, 237, 237, 0.5));
+        rect.setOutlineColor(sf::Color(190, 190, 190));
+        rect.setOutlineThickness(2);
+        centerShape(win_size, rect, true, false, 0u, 350u);
+
+        auto rect_pos = rect.getPosition();
+        sf::Text text;
+        text.setFont(data.fonts["Roboto"]);
+        text.setCharacterSize(20);
+        text.setStyle(sf::Text::Italic);
+        text.setFillColor(sf::Color::Black);
+        text.setString(value.substr(0, cursor_pos) + "|" + value.substr(cursor_pos));
+        text.setStyle(sf::Text::Regular);
+        text.setPosition(rect_pos.x - (rect.getSize().x / 2) + 20, 360u);
+
+        search_button = sf::RectangleShape(sf::Vector2f(120, 55));
+        if (search_button_hovered)
+            search_button.setFillColor(sf::Color(220, 220, 220));
+        else
+            search_button.setFillColor(sf::Color(237, 237, 237));
+
+        search_button.setOutlineColor(sf::Color(190, 190, 190));
+        search_button.setOutlineThickness(2);
+        centerShape(win_size, search_button, true, false, 0u, 450u);
+
+        sf::Text search_text("Search", data.fonts["Poppins"], 20);
+        search_text.setFillColor(sf::Color::Black);
+
+        centerText(win_size, search_text, true, false, 0u, 465u);
+
+        window.draw(rect);
+        window.draw(text);
+        window.draw(search_button);
+        window.draw(search_text);
+    }
+};
+
 #endif

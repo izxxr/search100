@@ -33,7 +33,7 @@ void loadFont(const std::string filename, const std::string name, AppData &data)
 
 
 int main()
-{    
+{
     // Window initialization
     sf::RenderWindow window(sf::VideoMode(1024, 768), "Search100");
     window.setFramerateLimit(FRAMES_PER_SECOND);
@@ -67,6 +67,8 @@ int main()
                 window.close();
             else if (event.type == sf::Event::Resized)
                 window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
+            else
+                state->processEvent(event, window, state, data);
         }
 
         if (!engine.getIndexSize())
@@ -78,7 +80,7 @@ int main()
         if (!indexes_loaded)
             status_bar.text.setString("Preparing indexes...");
 
-        state->draw(window, *state, data);
+        state->draw(window, state, data);
         status_bar.draw(window, data);
         window.display();
 
