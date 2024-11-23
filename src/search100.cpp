@@ -10,43 +10,84 @@
  * 
  * */
 
-#include <iostream>
-#include "utils.cpp"
-#include "engine.cpp"
+#ifndef _SEARCH100_MAIN
+#define _SEARCH100_MAIN
 
-using namespace std;
+#include <iostream>
+#include <map>
+#include <SFML/Graphics.hpp>
+#include "engine.cpp"
+#include "utils.cpp"
+#include "ui_states.cpp"
+#include "ui_components.cpp"
+
+const int FRAMES_PER_SECOND = 60;
+
+
+void loadFont(const std::string filename, const std::string name, AppData &data)
+{
+    sf::Font font;
+    font.loadFromFile(filename);
+    data.fonts[name] = font;
+}
+
 
 int main()
 {    
-    log("Welcome to Search100 - a simple yet fast search engine", "");
+    // Window initialization
+    sf::RenderWindow window(sf::VideoMode(1024, 768), "Search100");
+    window.setFramerateLimit(FRAMES_PER_SECOND);
 
+    // States
+    State* state = new StateHome();
     SearchEngine engine("corpus/");
-    engine.indexCorpusDirectory();
+    AppData data(engine);
 
-    std::string query;
+    // Loading Assets
+    sf::Image icon;
+    loadFont("assets/font_poppins.ttf", "Poppins", data);
+    loadFont("assets/font_roboto.ttf", "Roboto", data);
+    icon.loadFromFile("assets/img_icon.png");
+    window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
-    while (true)
+    // Common components
+    StatusBar status_bar;
+    status_bar.text.setString("Initializing...");
+
+    // General state variables
+    bool indexes_loaded = false;
+
+    while (window.isOpen())
     {
-        log("", "QUERY", true, 0, false);
-        getline(cin, query);
+        sf::Event event;
 
-        auto results = engine.search(query);
-        
-        for (auto &result : results)
+        while (window.pollEvent(event))
         {
-            auto path = engine.getDocumentPath(result.document_id);
-            
-            log("In document " + path.string() + " (" + to_string(result.relevance_score) + ")", "", false);
-            
-            for (auto &occurence : result.occurrences)
-            {
-                std::string line = to_string(occurence.line + 1);
-                std::string index = to_string(occurence.index + 1);
-                std::string msg = "At line " + line + ", column " + index + ", found '" + occurence.original + "'";
-                log(msg, "", false, 1);
-            }
+            if (event.type == sf::Event::Closed)
+                window.close();
+            else if (event.type == sf::Event::Resized)
+                window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
+        }
+
+        status_bar.text.setString("Ready | " + std::to_string(engine.getIndexSize()) + " documents");
+
+        if (!indexes_loaded)
+            status_bar.text.setString("Preparing indexes...");
+
+        state->draw(window, *state, data);
+        status_bar.draw(window, data);
+        window.display();
+
+        if (!indexes_loaded)
+        {
+            engine.indexCorpusDirectory();
+            indexes_loaded = true;
         }
     }
 
+    delete state;
+
     return 0;
 }
+
+#endif
