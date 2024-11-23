@@ -69,7 +69,11 @@ int main()
                 window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
         }
 
-        status_bar.text.setString("Ready | " + std::to_string(engine.getIndexSize()) + " documents");
+        if (!engine.getIndexSize())
+            status_bar.text.setString("Ready | No indexed documents | Add text files to " +
+                                      engine.corpus_directory_path.string() + " and restart Search100.");
+        else
+            status_bar.text.setString("Ready | " + std::to_string(engine.getIndexSize()) + " documents");
 
         if (!indexes_loaded)
             status_bar.text.setString("Preparing indexes...");

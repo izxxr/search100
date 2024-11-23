@@ -52,9 +52,6 @@ class SearchResult
  */
 class SearchEngine
 {
-    /* The path pointing to directory containing the documents (or text files) to be searched. */
-    std::filesystem::path corpus_directory_path;
-
     /* Maps document ID to path of that document. */
     std::map<int, std::filesystem::path> documents;
 
@@ -355,6 +352,9 @@ class SearchEngine
     }
 
     public:
+
+    /* The path pointing to directory containing the documents (or text files) to be searched. */
+    std::filesystem::path corpus_directory_path;
 
     /**
      * @brief Search engine constructor
