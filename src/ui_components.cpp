@@ -170,9 +170,9 @@ class SearchBar: public Component
 
         search_button = sf::RectangleShape(sf::Vector2f(130, 50));
         if (search_button_hovered)
-            search_button.setFillColor(sf::Color(220, 220, 220));
+            search_button.setFillColor(sf::Color(255, 255, 255));
         else
-            search_button.setFillColor(sf::Color(237, 237, 237));
+            search_button.setFillColor(sf::Color(0, 0, 0));
 
         search_button.setOutlineColor(sf::Color(190, 190, 190));
         search_button.setOutlineThickness(2);
@@ -183,7 +183,10 @@ class SearchBar: public Component
             search_button.setPosition(rect.getPosition() + rect.getSize() + sf::Vector2f(40, -50));
 
         sf::Text search_text("Search", data.fonts["Poppins"], 19);
-        search_text.setFillColor(sf::Color::Black);
+        if (search_button_hovered)
+            search_text.setFillColor(sf::Color::Black);
+        else
+            search_text.setFillColor(sf::Color::White);
 
         if (state->getName() == "home")
             centerText(win_size, search_text, true, false, 0u, 465u);

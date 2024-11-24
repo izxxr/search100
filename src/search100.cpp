@@ -54,9 +54,6 @@ int main()
     StatusBar status_bar;
     status_bar.text.setString("Initializing...");
 
-    // General state variables
-    bool indexes_loaded = false;
-
     while (window.isOpen())
     {
         sf::Event event;
@@ -77,17 +74,24 @@ int main()
         else
             status_bar.text.setString("Ready | " + std::to_string(engine.getIndexSize()) + " documents");
 
-        if (!indexes_loaded)
+        if (!data.indexes_loaded)
             status_bar.text.setString("Preparing indexes...");
 
         state->draw(window, state, data);
         status_bar.draw(window, state, data);
         window.display();
 
-        if (!indexes_loaded)
+        if (!data.indexes_loaded)
         {
-            engine.indexCorpusDirectory();
-            indexes_loaded = true;
+            engine.indexCorpusDirectory(data.indexes_use_data);
+            data.indexes_loaded = true;
+            data.indexes_use_data = false;
+        }
+        if (data.state_reset)
+        {
+            delete state;
+            state = new StateHome();
+            data.state_reset = false;
         }
     }
 

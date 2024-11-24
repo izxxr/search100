@@ -382,6 +382,11 @@ class SearchEngine
      */
     void indexCorpusDirectory(bool useData = true)
     {
+        doc_id_tracker = -1;
+        documents.clear();
+        term_documents.clear();
+        term_occurrences.clear();
+
         log("Finding local documents index...");
 
         if (checkFileExists("term_occurrences.json") && checkFileExists("term_documents.json")

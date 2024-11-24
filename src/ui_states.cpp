@@ -22,6 +22,9 @@ class AppData
 
     std::map<std::string, sf::Font> fonts;
     SearchEngine &engine;
+    bool indexes_loaded = false;
+    bool indexes_use_data = true;
+    bool state_reset = false;
 
     AppData(SearchEngine &engine_inst) : engine(engine_inst) {}
 };
@@ -124,6 +127,11 @@ class StateSearch: public State
     std::string query;
 
     /**
+     * @brief Whether to search using the AND search strategy.
+     */
+    bool search_strategy_and;
+
+    /**
      * @brief The search bar associated with the state.
      */
     SearchBar searchbar;
@@ -134,6 +142,11 @@ class StateSearch: public State
     std::vector<SearchResult> results;
 
     /**
+     * @brief Back to home button.
+     */
+    sf::RectangleShape sf_back_home_button;
+
+    /**
      * @brief Result heading entries outlining document ID.
      */
     std::vector<std::tuple<bool, std::string, sf::Text>> sf_result_headings;
@@ -141,10 +154,12 @@ class StateSearch: public State
     sf::Text sf_result_text;
 
     bool search_results_fetched = false;
+    bool back_home_button_hovered = false;
 
-    StateSearch (std::string search_value)
+    StateSearch (std::string search_value, bool search_strategy_and_value)
     {
         query = search_value;
+        search_strategy_and = search_strategy_and_value;
         searchbar.value = query;
         searchbar.cursor_pos = query.length();
     }
@@ -159,13 +174,23 @@ class StateSearch: public State
         if (processEventSearchbar(event, window, state, data, searchbar))
         {
             delete state;
-            state = new StateSearch(searchbar.value);
+            state = new StateSearch(searchbar.value, search_strategy_and);
             return;
         }
 
-        auto mouse = sf::Vector2f(sf::Mouse::getPosition(window));
-        if (event.type == sf::Event::MouseMoved || event.type == sf::Event::MouseButtonReleased)
+        if (!searchbar.search_button_hovered && (event.type == sf::Event::MouseMoved || event.type == sf::Event::MouseButtonReleased))
         {
+            auto mouse = sf::Vector2f(sf::Mouse::getPosition(window));
+            back_home_button_hovered = sf_back_home_button.getGlobalBounds().contains(mouse);
+
+            if (back_home_button_hovered)
+            {
+                if ((event.type == sf::Event::MouseButtonReleased) && (event.mouseButton.button == sf::Mouse::Left))
+                    data.state_reset = true;
+
+                return;
+            }
+
             for (int i = 0; i < sf_result_headings.size(); ++i)
             {
                 auto &tup = sf_result_headings[i];
@@ -267,14 +292,31 @@ class StateSearch: public State
         else
             sf_result_text.setString("Showing results for \"" + query + "\"");
 
+        sf_back_home_button = sf::RectangleShape(sf::Vector2f(120, 50));
+        if (back_home_button_hovered)
+            sf_back_home_button.setFillColor(sf::Color(220, 220, 220));
+        else
+            sf_back_home_button.setFillColor(sf::Color(237, 237, 237));
+
+        sf_back_home_button.setOutlineColor(sf::Color(190, 190, 190));
+        sf_back_home_button.setOutlineThickness(2);
+        sf_back_home_button.setPosition(
+            searchbar.search_button.getPosition() + sf::Vector2f(160, 0)
+        );
+
+        sf::Text sf_back_home_text("Home", data.fonts["Poppins"], 19);
+        sf_back_home_text.setFillColor(sf::Color::Black);
+        sf_back_home_text.setPosition(searchbar.search_button.getPosition() + sf::Vector2f(190, 13));
 
         window.clear(sf::Color::White);
         window.draw(sf_result_text);
+        window.draw(sf_back_home_button);
+        window.draw(sf_back_home_text);
         searchbar.draw(window, state, data);
 
         if (!search_results_fetched)
         {
-            results = data.engine.search(query);
+            results = data.engine.search(query, search_strategy_and);
             search_results_fetched = true;
         }
 
@@ -291,8 +333,14 @@ class StateHome: public State
     public:
 
     std::string name = "home";
-
     SearchBar searchbar;
+
+    bool search_strategy_and = true;
+    bool search_strategy_toggle_hover = false;
+    bool reindex_button_hover = false;
+
+    sf::RectangleShape sf_search_strategy_toggle;
+    sf::RectangleShape sf_reindex_button;
 
     std::string getName()
     {
@@ -304,7 +352,29 @@ class StateHome: public State
         if (processEventSearchbar(event, window, state, data, searchbar))
         {
             delete state;
-            state = new StateSearch(searchbar.value);
+            state = new StateSearch(searchbar.value, search_strategy_and);
+        }
+        else if (!searchbar.search_button_hovered && event.type == sf::Event::MouseMoved)
+        {
+            auto mouse = sf::Vector2f(sf::Mouse::getPosition(window));
+            auto toggle_bounds = sf_search_strategy_toggle.getGlobalBounds();
+            auto reindex_bounds = sf_reindex_button.getGlobalBounds();
+            search_strategy_toggle_hover = toggle_bounds.contains(mouse);
+            reindex_button_hover = reindex_bounds.contains(mouse);
+        }
+        else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
+        {
+            auto mouse = sf::Vector2f(sf::Mouse::getPosition(window));
+            auto toggle_bounds = sf_search_strategy_toggle.getGlobalBounds();
+            auto reindex_bounds = sf_reindex_button.getGlobalBounds();
+
+            if (toggle_bounds.contains(mouse))
+                search_strategy_and = !search_strategy_and;
+            else if (reindex_bounds.contains(mouse))
+            {
+                data.indexes_loaded = false;
+                data.indexes_use_data = false;
+            }
         }
     }
 
@@ -326,10 +396,56 @@ class StateHome: public State
         subtitle.setFillColor(sf::Color::Black);
         subtitle.setStyle(sf::Text::Italic);
 
+        sf_search_strategy_toggle = sf::RectangleShape(sf::Vector2f(200, 50));
+        if (search_strategy_toggle_hover)
+            sf_search_strategy_toggle.setFillColor(sf::Color(220, 220, 220));
+        else
+            sf_search_strategy_toggle.setFillColor(sf::Color(237, 237, 237));
+
+        sf_search_strategy_toggle.setOutlineColor(sf::Color(190, 190, 190));
+        sf_search_strategy_toggle.setOutlineThickness(2);
+
+        std::string text = "Search Strategy: ";
+        if (search_strategy_and)
+            text += "AND";
+        else
+            text += "OR";
+
+        sf::Text sf_search_strategy_text(text, data.fonts["Roboto"], 19);
+        sf_search_strategy_text.setFillColor(sf::Color::Black);
+
+        centerShape(win_size, sf_search_strategy_toggle, true, false, 0u, 550u);
+        centerText(win_size, sf_search_strategy_text, true, false, 0u, 565u);
+
+        sf_search_strategy_text.setPosition(sf_search_strategy_text.getPosition() - sf::Vector2f(120, 0));
+        sf_search_strategy_toggle.setPosition(sf_search_strategy_toggle.getPosition() - sf::Vector2f(120, 0));
+
+        sf_reindex_button = sf::RectangleShape(sf::Vector2f(200, 50));
+        if (reindex_button_hover)
+            sf_reindex_button.setFillColor(sf::Color(220, 220, 220));
+        else
+            sf_reindex_button.setFillColor(sf::Color(237, 237, 237));
+
+        sf_reindex_button.setOutlineColor(sf::Color(190, 190, 190));
+        sf_reindex_button.setOutlineThickness(2);
+
+        sf::Text sf_reindex_text("Reindex Documents", data.fonts["Roboto"], 19);
+        sf_reindex_text.setFillColor(sf::Color::Black);
+
+        centerShape(win_size, sf_reindex_button, true, false, 0u, 550u);
+        centerText(win_size, sf_reindex_text, true, false, 0u, 565u);
+
+        sf_reindex_text.setPosition(sf_reindex_text.getPosition() - sf::Vector2f(-120, 0));
+        sf_reindex_button.setPosition(sf_reindex_button.getPosition() - sf::Vector2f(-120, 0));
+
         window.clear(sf::Color::White);
         window.draw(title);
         window.draw(subtitle);
         searchbar.draw(window, state, data);
+        window.draw(sf_search_strategy_toggle);
+        window.draw(sf_search_strategy_text);
+        window.draw(sf_reindex_button);
+        window.draw(sf_reindex_text);
     }
 };
 
