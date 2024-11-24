@@ -153,8 +153,20 @@ class StateSearch: public State
 
     sf::Text sf_result_text;
 
+    sf::RectangleShape sf_next_page_button;
+    sf::RectangleShape sf_prev_page_button;
+    sf::Text sf_next_page_symbol;
+    sf::Text sf_prev_page_symbol;
+
     bool search_results_fetched = false;
     bool back_home_button_hovered = false;
+    bool sf_next_page_hover = false;
+    bool sf_prev_page_hover = false;
+
+    int page_number = 0;
+    int max_page_number = -1;
+
+    std::map<int, std::pair<int, int>> page_bounds;
 
     StateSearch (std::string search_value, bool search_strategy_and_value)
     {
@@ -181,12 +193,38 @@ class StateSearch: public State
         if (!searchbar.search_button_hovered && (event.type == sf::Event::MouseMoved || event.type == sf::Event::MouseButtonReleased))
         {
             auto mouse = sf::Vector2f(sf::Mouse::getPosition(window));
+
             back_home_button_hovered = sf_back_home_button.getGlobalBounds().contains(mouse);
+            sf_prev_page_hover = sf_prev_page_button.getGlobalBounds().contains(mouse);
+            sf_next_page_hover = sf_next_page_button.getGlobalBounds().contains(mouse);
 
             if (back_home_button_hovered)
             {
                 if ((event.type == sf::Event::MouseButtonReleased) && (event.mouseButton.button == sf::Mouse::Left))
                     data.state_reset = true;
+
+                return;
+            }
+            else if (sf_prev_page_hover)
+            {
+                if ((event.type == sf::Event::MouseButtonReleased) && (event.mouseButton.button == sf::Mouse::Left) && page_number > 0)
+                {
+                    page_number--;
+                    sf_result_headings.clear();
+                }
+
+                return;
+            }
+            else if (sf_next_page_hover)
+            {
+                if ((event.type == sf::Event::MouseButtonReleased) && (event.mouseButton.button == sf::Mouse::Left))
+                {
+                    page_number++;
+                    if ((max_page_number != -1) && (page_number > max_page_number))
+                        page_number--;
+                    else
+                        sf_result_headings.clear();
+                }
 
                 return;
             }
@@ -209,15 +247,45 @@ class StateSearch: public State
         }
     }
 
+    void getPageBounds(int &lb, int &ub)
+    {
+        if (page_bounds.empty())
+        {
+            lb = 0;
+            ub = results.size() - 1;
+            return;
+        }
+
+        if (page_bounds.count(page_number))
+        {
+            lb = page_bounds[page_number].first;
+            ub = page_bounds[page_number].second;
+        }
+        else
+        {
+            auto last_entry = --page_bounds.end();
+            auto last_page = last_entry->second;
+
+            lb = last_page.second + 1;
+            ub = results.size() - 1;
+        }
+    }
+
     void drawResults(sf::RenderWindow &window, State* &state, AppData &data)
     {
         int y_entry = 240;
         int dy_entry = 69;
+
+        int lb, ub;
+        getPageBounds(lb, ub);
+
         int index = 0;
         bool empty = sf_result_headings.empty();
 
-        for (auto &entry : results)
+        for (int i = lb; i <= ub; i++)
         {
+            auto entry = results[i];
+
             int y_occurrence = 15;
             int dy_occurrence = 40;
 
@@ -229,6 +297,14 @@ class StateSearch: public State
             sf_result_entry.setOutlineColor(sf::Color(190, 190, 190));
             sf_result_entry.setOutlineThickness(2);
             sf_result_entry.setPosition(sf_result_text.getPosition() + sf::Vector2f(40, y_entry));
+
+            y_entry += sf_result_entry.getSize().y + dy_entry;
+
+            if ((sf_result_entry.getPosition().y + sf_result_entry.getSize().y) > 900)
+            {
+                page_bounds[page_number] = std::pair<int, int>{lb, i - 1};
+                break;
+            }
 
             sf::Text sf_result_heading;
 
@@ -258,8 +334,6 @@ class StateSearch: public State
                 index++;
             }
 
-            y_entry += sf_result_entry.getSize().y + dy_entry;
-
             for (auto &occurrence : entry.occurrences)
             {
                 sf::Text text("Line " + std::to_string(occurrence.line + 1) + ", Column " +
@@ -275,6 +349,9 @@ class StateSearch: public State
 
             window.draw(sf_result_entry);
             window.draw(sf_result_heading);
+
+            if (i == (results.size() - 1))
+                max_page_number = page_number;
         }
     }
 
@@ -290,7 +367,7 @@ class StateSearch: public State
         else if (search_results_fetched && !results.size())
             sf_result_text.setString("No results found for \"" + query + "\"");
         else
-            sf_result_text.setString("Showing results for \"" + query + "\"");
+            sf_result_text.setString(std::to_string(results.size()) + " results found for \"" + query + "\"");
 
         sf_back_home_button = sf::RectangleShape(sf::Vector2f(120, 50));
         if (back_home_button_hovered)
@@ -303,15 +380,48 @@ class StateSearch: public State
         sf_back_home_button.setPosition(
             searchbar.search_button.getPosition() + sf::Vector2f(160, 0)
         );
-
         sf::Text sf_back_home_text("Home", data.fonts["Poppins"], 19);
         sf_back_home_text.setFillColor(sf::Color::Black);
         sf_back_home_text.setPosition(searchbar.search_button.getPosition() + sf::Vector2f(190, 13));
+
+        sf_prev_page_button = sf::RectangleShape(sf::Vector2f(50, 50));
+        if (sf_prev_page_hover)
+            sf_prev_page_button.setFillColor(sf::Color(220, 220, 220));
+        else
+            sf_prev_page_button.setFillColor(sf::Color(237, 237, 237));
+
+        sf_prev_page_button.setOutlineColor(sf::Color(190, 190, 190));
+        sf_prev_page_button.setOutlineThickness(2);
+
+        sf_prev_page_symbol = sf::Text("<", data.fonts["Poppins"], 40);
+        sf_prev_page_symbol.setFillColor(sf::Color::Black);
+
+        sf_prev_page_button.setPosition(350, 860);
+        sf_prev_page_symbol.setPosition(365, 860);
+
+        sf_next_page_button = sf::RectangleShape(sf::Vector2f(50, 50));
+        if (sf_next_page_hover)
+            sf_next_page_button.setFillColor(sf::Color(220, 220, 220));
+        else
+            sf_next_page_button.setFillColor(sf::Color(237, 237, 237));
+
+        sf_next_page_button.setOutlineColor(sf::Color(190, 190, 190));
+        sf_next_page_button.setOutlineThickness(2);
+
+        sf_next_page_symbol = sf::Text(">", data.fonts["Poppins"], 40);
+        sf_next_page_symbol.setFillColor(sf::Color::Black);
+
+        sf_next_page_button.setPosition(450, 860);
+        sf_next_page_symbol.setPosition(465, 860);
 
         window.clear(sf::Color::White);
         window.draw(sf_result_text);
         window.draw(sf_back_home_button);
         window.draw(sf_back_home_text);
+        window.draw(sf_prev_page_button);
+        window.draw(sf_next_page_button);
+        window.draw(sf_prev_page_symbol);
+        window.draw(sf_next_page_symbol);
         searchbar.draw(window, state, data);
 
         if (!search_results_fetched)
