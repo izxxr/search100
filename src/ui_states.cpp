@@ -382,6 +382,9 @@ class StateHome: public State
                     std::string path = data.engine.corpus_directory_path.string();
                     normalizePath(path);
 
+                    // This would not work on Linux and unfortunately there are no
+                    // solutions either as each linux distro has its own file explorer
+                    // having different command e.g. nautilus, nemo, etc.
                     path = "explorer " + path;
                     system(path.c_str());
                 }

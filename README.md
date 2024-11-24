@@ -65,3 +65,32 @@ $ mingw32-make -f Makefile
 ```
 
 Run the produced `search100.exe` file to use Search100.
+
+## Preparing Corpus Directory
+In order to start searching, the files that are to be searched first need to be added to the
+corpus directory of Search100. The `corpus` directory is located in the folder where `search100.exe`
+is located.
+
+If you cannot find the `corpus` directory, click on *"Corpus Directory"* button on the home page
+of Search100 and the directory will be opened.
+
+> :warning: Due to certain platform constraints, *"Corpus Directory"* button is only supported on Windows and may not work properly on other operating systems.
+
+Copy the text files to be searched into the `corpus` directory. Note that only `.txt` files are
+supported for searching. Run `search100.exe` and click *"Reindex Documents"* to ensure that
+documents are indexed.
+
+Once the status bar shows "Ready" status, the searching can be performed. If you modify the
+corpus documents, indexing has to be performed again. Use the *"Reindex Documents"* button to
+index documents again.
+
+## Searching Strategies
+There are two searching strategies available in Search100:
+
+1. `AND` based search
+2. `OR` based search
+
+`AND` based search returns only those documents that has all of the terms from the search query. `OR`
+on the other hand, returns documents that has any of the terms from the query.
+
+Searching strategy can be changed using the toggle button on the home screen.
