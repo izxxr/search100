@@ -26,11 +26,9 @@ environment variable.
 
 ### Using Precompiled Files
 
-Use the following link to download the files for your respective operating system:
+Use the following link to download the files for 64 bit Windows:
 
-> **64-bit:** [**⬇️ Download search100_w64.zip**](https://github.com/izxxr/search100/releases/download/1.0.0/search100_w64.zip)
-
-> **32-bit:** [**⬇️ Download search100_w32.zip**](https://github.com/izxxr/search100/releases/download/1.0.0/search100_w32.zip)
+> [**⬇️ Download search100_w64.zip**](https://github.com/izxxr/search100/releases/download/1.0.0/search100_w64.zip)
 
 Extract the downloaded ZIP file and run `search100.exe` file to start using Search100.
 
@@ -74,7 +72,7 @@ is located.
 If you cannot find the `corpus` directory, click on *"Corpus Directory"* button on the home page
 of Search100 and the directory will be opened.
 
-> :warning: Due to certain platform constraints, *"Corpus Directory"* button is only supported on Windows and may not work properly on other operating systems.
+> ⚠️ Due to certain platform constraints, *"Corpus Directory"* button is only supported on Windows and may not work properly on other operating systems.
 
 Copy the text files to be searched into the `corpus` directory. Note that only `.txt` files are
 supported for searching. Run `search100.exe` and click *"Reindex Documents"* to ensure that
