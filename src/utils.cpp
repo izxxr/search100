@@ -85,4 +85,19 @@ void log(
         std::cout << std::endl;
 }
 
+// On Windows, paths use backslash as delimiter while on most other (Linux based) operating
+// systems paths are mostly delimited by forward slash.
+#ifdef _WIN32
+
+    void normalizePath(std::string &path)
+    {
+        std::replace(path.begin(), path.end(), '/', '\\');
+    }
+
+#else
+
+    void normalizePath(std::string &path) {};
+
+#endif
+
 #endif

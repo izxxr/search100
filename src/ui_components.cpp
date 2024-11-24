@@ -3,7 +3,10 @@
 #ifndef _SEARCH100_UI_COMPONENTS
 #define _SEARCH100_UI_COMPONENTS
 
+#include <fstream>
 #include <SFML/Graphics.hpp>
+#include "stemming.cpp"
+#include "engine.cpp"
 #include "ui_states.cpp"
 #include "ui_utils.cpp"
 
@@ -22,7 +25,7 @@ class Component {
      * @param window: The SFML window instance.
      * @param data: The application data.
      */
-    virtual void draw(sf::RenderWindow &window, AppData &data) = 0;
+    virtual void draw(sf::RenderWindow &window, State* &state, AppData &data) = 0;
 };
 
 
@@ -41,7 +44,7 @@ class StatusBar: public Component
      */
     sf::Text text;
 
-    void draw(sf::RenderWindow &window, AppData &data)
+    void draw(sf::RenderWindow &window, State* &state, AppData &data)
     {
         auto win_size = window.getSize();
 
@@ -134,11 +137,9 @@ class SearchBar: public Component
         }
         else if (unicode < 128)
             value.insert(cursor_pos++, 1, static_cast<char>(unicode));
-
-        std::cout << unicode << std::endl;
     }
 
-    void draw(sf::RenderWindow &window, AppData &data)
+    void draw(sf::RenderWindow &window, State* &state, AppData &data)
     {
         auto win_size = window.getSize();
         sf::RectangleShape rect(sf::Vector2f(600, 50));
@@ -146,9 +147,14 @@ class SearchBar: public Component
         rect.setFillColor(sf::Color(237, 237, 237, 0.5));
         rect.setOutlineColor(sf::Color(190, 190, 190));
         rect.setOutlineThickness(2);
-        centerShape(win_size, rect, true, false, 0u, 350u);
+
+        if (state->getName() == "home")
+            centerShape(win_size, rect, true, false, 0u, 350u);
+        else if (state->getName() == "search")
+            rect.setPosition(40u, 40u);
 
         auto rect_pos = rect.getPosition();
+
         sf::Text text;
         text.setFont(data.fonts["Roboto"]);
         text.setCharacterSize(20);
@@ -156,9 +162,13 @@ class SearchBar: public Component
         text.setFillColor(sf::Color::Black);
         text.setString(value.substr(0, cursor_pos) + "|" + value.substr(cursor_pos));
         text.setStyle(sf::Text::Regular);
-        text.setPosition(rect_pos.x - (rect.getSize().x / 2) + 20, 360u);
 
-        search_button = sf::RectangleShape(sf::Vector2f(120, 55));
+        if (state->getName() == "home")
+            text.setPosition(rect_pos.x - (rect.getSize().x / 2) + 20, 360u);
+        else if (state->getName() == "search")
+            text.setPosition(50u, 50u);
+
+        search_button = sf::RectangleShape(sf::Vector2f(130, 50));
         if (search_button_hovered)
             search_button.setFillColor(sf::Color(220, 220, 220));
         else
@@ -166,12 +176,19 @@ class SearchBar: public Component
 
         search_button.setOutlineColor(sf::Color(190, 190, 190));
         search_button.setOutlineThickness(2);
-        centerShape(win_size, search_button, true, false, 0u, 450u);
 
-        sf::Text search_text("Search", data.fonts["Poppins"], 20);
+        if (state->getName() == "home")
+            centerShape(win_size, search_button, true, false, 0u, 450u);
+        else if (state->getName() == "search")
+            search_button.setPosition(rect.getPosition() + rect.getSize() + sf::Vector2f(40, -50));
+
+        sf::Text search_text("Search", data.fonts["Poppins"], 19);
         search_text.setFillColor(sf::Color::Black);
 
-        centerText(win_size, search_text, true, false, 0u, 465u);
+        if (state->getName() == "home")
+            centerText(win_size, search_text, true, false, 0u, 465u);
+        else if (state->getName() == "search")
+            search_text.setPosition(rect.getPosition() + rect.getSize() + sf::Vector2f(70, -35));
 
         window.draw(rect);
         window.draw(text);

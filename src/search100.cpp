@@ -81,7 +81,7 @@ int main()
             status_bar.text.setString("Preparing indexes...");
 
         state->draw(window, state, data);
-        status_bar.draw(window, data);
+        status_bar.draw(window, state, data);
         window.display();
 
         if (!indexes_loaded)
