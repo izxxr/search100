@@ -93,8 +93,6 @@ bool processEventSearchbar(
         auto search_button = searchbar.search_button.getGlobalBounds();
         auto mouse = sf::Vector2f(sf::Mouse::getPosition(window));
 
-        std::cout << "(" << mouse.x << ", " << mouse.y << ")" << std::endl;
-
         if (search_button.contains(mouse))
             searchbar.search_button_hovered = true;
         else
