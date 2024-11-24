@@ -9,7 +9,7 @@
  * 
  * To run the tests, "src" directory has to be included using -I flag with g++:
  * 
- * $ g++ -I src tests.cpp
+ * $ g++ -I include tests.cpp
  * $ ./a.exe
  * 
  * Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025
