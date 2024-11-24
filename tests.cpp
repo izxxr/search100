@@ -1,7 +1,7 @@
 /** 
  * Unit tests for Search100
  * 
- * This file contains tests for various components of the application. For simplicity
+ * This file contains tests for some components of the application. For simplicity
  * sake, the tests are written without any framework so a lot of work is done manually.
  * The IS_EQ directive used for testing is based on this SO answer:
  * 
@@ -12,7 +12,7 @@
  * $ g++ -I src tests.cpp
  * $ ./a.exe
  * 
- * Copyright (C) Izhar Ahmad & Mustafa Hussain, 2024-2025
+ * Copyright (C) Izhar Ahmad & Mustafa Hussain Qizilbash, 2024-2025
  *
  * */ 
 
