@@ -96,7 +96,10 @@ void log(
 
 #else
 
-    void normalizePath(std::string &path) {};
+    void normalizePath(std::string &path)
+    {
+        std::replace(path.begin(), path.end(), '\\', '/');
+    };
 
 #endif
 
