@@ -182,13 +182,6 @@ class StateSearch: public State
                     system(path.c_str());
             }
         }
-        if (!searchbar.search_button_hovered && event.type == sf::Event::MouseMoved)
-        {
-        }
-        else if (event.type == sf::Event::MouseButtonReleased)
-        {
-
-        }
     }
 
     void drawResults(sf::RenderWindow &window, State* &state, AppData &data)
