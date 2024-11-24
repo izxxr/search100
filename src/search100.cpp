@@ -69,8 +69,7 @@ int main()
         }
 
         if (!engine.getIndexSize())
-            status_bar.text.setString("Ready | No indexed documents | Add text files to " +
-                                      engine.corpus_directory_path.string() + " and restart Search100.");
+            status_bar.text.setString("No documents are available to search. Add text files to corpus directory and reindex documents to start searching.");
         else
             status_bar.text.setString("Ready | " + std::to_string(engine.getIndexSize()) + " documents");
 

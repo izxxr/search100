@@ -338,9 +338,11 @@ class StateHome: public State
     bool search_strategy_and = true;
     bool search_strategy_toggle_hover = false;
     bool reindex_button_hover = false;
+    bool open_corpus_dir_hover = false;
 
     sf::RectangleShape sf_search_strategy_toggle;
     sf::RectangleShape sf_reindex_button;
+    sf::RectangleShape sf_open_corpus_dir;
 
     std::string getName()
     {
@@ -354,26 +356,35 @@ class StateHome: public State
             delete state;
             state = new StateSearch(searchbar.value, search_strategy_and);
         }
-        else if (!searchbar.search_button_hovered && event.type == sf::Event::MouseMoved)
+        else if (!searchbar.search_button_hovered && (event.type == sf::Event::MouseMoved ||
+                (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)))
         {
             auto mouse = sf::Vector2f(sf::Mouse::getPosition(window));
             auto toggle_bounds = sf_search_strategy_toggle.getGlobalBounds();
             auto reindex_bounds = sf_reindex_button.getGlobalBounds();
+            auto open_corpus_bounds = sf_open_corpus_dir.getGlobalBounds();
+
             search_strategy_toggle_hover = toggle_bounds.contains(mouse);
             reindex_button_hover = reindex_bounds.contains(mouse);
-        }
-        else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
-        {
-            auto mouse = sf::Vector2f(sf::Mouse::getPosition(window));
-            auto toggle_bounds = sf_search_strategy_toggle.getGlobalBounds();
-            auto reindex_bounds = sf_reindex_button.getGlobalBounds();
+            open_corpus_dir_hover = open_corpus_bounds.contains(mouse);
 
-            if (toggle_bounds.contains(mouse))
-                search_strategy_and = !search_strategy_and;
-            else if (reindex_bounds.contains(mouse))
+            if (event.type == sf::Event::MouseButtonReleased)
             {
-                data.indexes_loaded = false;
-                data.indexes_use_data = false;
+                if (search_strategy_toggle_hover)
+                    search_strategy_and = !search_strategy_and;
+                else if (reindex_button_hover)
+                {
+                    data.indexes_loaded = false;
+                    data.indexes_use_data = false;
+                }
+                else if (open_corpus_dir_hover)
+                {
+                    std::string path = data.engine.corpus_directory_path.string();
+                    normalizePath(path);
+
+                    path = "explorer " + path;
+                    system(path.c_str());
+                }
             }
         }
     }
@@ -417,8 +428,8 @@ class StateHome: public State
         centerShape(win_size, sf_search_strategy_toggle, true, false, 0u, 550u);
         centerText(win_size, sf_search_strategy_text, true, false, 0u, 565u);
 
-        sf_search_strategy_text.setPosition(sf_search_strategy_text.getPosition() - sf::Vector2f(120, 0));
-        sf_search_strategy_toggle.setPosition(sf_search_strategy_toggle.getPosition() - sf::Vector2f(120, 0));
+        sf_search_strategy_text.setPosition(sf_search_strategy_text.getPosition() - sf::Vector2f(220, 0));
+        sf_search_strategy_toggle.setPosition(sf_search_strategy_toggle.getPosition() - sf::Vector2f(220, 0));
 
         sf_reindex_button = sf::RectangleShape(sf::Vector2f(200, 50));
         if (reindex_button_hover)
@@ -435,8 +446,23 @@ class StateHome: public State
         centerShape(win_size, sf_reindex_button, true, false, 0u, 550u);
         centerText(win_size, sf_reindex_text, true, false, 0u, 565u);
 
-        sf_reindex_text.setPosition(sf_reindex_text.getPosition() - sf::Vector2f(-120, 0));
-        sf_reindex_button.setPosition(sf_reindex_button.getPosition() - sf::Vector2f(-120, 0));
+        sf_open_corpus_dir = sf::RectangleShape(sf::Vector2f(200, 50));
+        if (open_corpus_dir_hover)
+            sf_open_corpus_dir.setFillColor(sf::Color(220, 220, 220));
+        else
+            sf_open_corpus_dir.setFillColor(sf::Color(237, 237, 237));
+
+        sf_open_corpus_dir.setOutlineColor(sf::Color(190, 190, 190));
+        sf_open_corpus_dir.setOutlineThickness(2);
+
+        sf::Text sf_open_corpus_text("Corpus Directory", data.fonts["Roboto"], 19);
+        sf_open_corpus_text.setFillColor(sf::Color::Black);
+
+        centerShape(win_size, sf_open_corpus_dir, true, false, 0u, 550u);
+        centerText(win_size, sf_open_corpus_text, true, false, 0u, 565u);
+
+        sf_open_corpus_text.setPosition(sf_open_corpus_text.getPosition() + sf::Vector2f(220, 0));
+        sf_open_corpus_dir.setPosition(sf_open_corpus_dir.getPosition() + sf::Vector2f(220, 0));
 
         window.clear(sf::Color::White);
         window.draw(title);
@@ -446,6 +472,8 @@ class StateHome: public State
         window.draw(sf_search_strategy_text);
         window.draw(sf_reindex_button);
         window.draw(sf_reindex_text);
+        window.draw(sf_open_corpus_dir);
+        window.draw(sf_open_corpus_text);
     }
 };
 
