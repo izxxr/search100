@@ -1,3 +1,5 @@
+![](assets/banner.png)
+
 # search100
 A simple yet fast search engine for text files.
 
