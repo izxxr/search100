@@ -5,7 +5,8 @@ A simple yet fast search engine for text files.
 
 > **Background**
 >
-> This search engine was developed as a semester project for CS 100 course in Fall 2024 at [LUMS](https://lums.edu.pk) with [@mustafa-hq](https://github.com/mustafa-hq).
+> This search engine was developed as a semester project for CS 100 course in Fall 2024 at [LUMS](https://lums.edu.pk) by [@izxxr](https://github.com/izxxr) and
+> [@mustafa-hq](https://github.com/mustafa-hq).
 
 ## Installation
 There are two modes of installing and setting up of Search100:
